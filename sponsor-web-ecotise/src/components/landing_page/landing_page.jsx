@@ -1,7 +1,5 @@
 // Import necessary libraries
 import React from 'react';
-import './App.css'; // Assuming you'll style your landing page using CSS
-
 const LandingPage = () => {
   return (
     <div className="landing-page">
