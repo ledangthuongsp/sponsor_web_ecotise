@@ -1,5 +1,6 @@
 // Import necessary libraries
 import React from 'react';
+import './landing_page.css';
 const LandingPage = () => {
   return (
     <div className="landing-page">
