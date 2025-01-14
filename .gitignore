@@ -1,0 +1,42 @@
+# Environment files
+.env
+*.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*   # Bỏ qua tất cả các file dạng .env.<tên bất kỳ>
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Thư mục build
+dist
+dist-ssr
+build
+
+# Node modules
+node_modules
+
+# Temporary files
+*.tmp
+*.temp
+*.sw?
+*.bak
+*.orig
+*.old
+
+# IDE files
+.vscode/*
+!.vscode/extensions.json # Giữ lại extensions.json nếu cần
+.idea
+*.suo
+*.njsproj
+*.sln
+
+# OS generated files
+.DS_Store
+Thumbs.db
