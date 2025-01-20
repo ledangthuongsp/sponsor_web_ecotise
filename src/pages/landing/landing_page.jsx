@@ -1,10 +1,9 @@
-// LandingPage.tsx
 import React from 'react';
-import './LandingPage.css';
+import './landing_page.css';
 import { useNavigate } from 'react-router-dom';
 import paths from 'routes/paths';
 
-const handleSignInClick = (navigate: ReturnType<typeof useNavigate>) => {
+const handleSignInClick = (navigate) => {
     navigate(paths.signin); // Điều hướng tới route Sign In
 };
 
@@ -120,7 +119,7 @@ const Footer = () => (
     </footer>
 );
 
-const LandingPage: React.FC = () => {
+const LandingPage = () => {
     const navigate = useNavigate();
     return (
         <div className="landing-page">
