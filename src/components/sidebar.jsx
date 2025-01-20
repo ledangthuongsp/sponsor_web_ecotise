@@ -1,56 +1,37 @@
 import React from 'react';
-import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { Home, Task, Message, Settings, ExitToApp } from '@mui/icons-material';
+import { Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Home, Task, ExitToApp } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = () => {
-  return (
-    <Box
-      sx={{
-        width: 240,
-        height: '100vh',
-        backgroundColor: '#F4F5F7',
-        padding: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
+  const navigate = useNavigate();
 
-      {/* Menu Items */}
+  return (
+    <Box sx={{ width: 240, backgroundColor: '#F4F5F7' }}>
       <List>
-        <ListItem button>
+        <ListItem button onClick={() => navigate('/dashboard')}>
           <ListItemIcon>
-            <Home sx={{ color: '#4263EB' }} />
+            <Home />
           </ListItemIcon>
           <ListItemText primary="Overview" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={() => navigate('/activity')}>
           <ListItemIcon>
-            <Task sx={{ color: '#4263EB' }} />
+            <Task />
           </ListItemIcon>
-          <ListItemText primary="Task" />
+          <ListItemText primary="Activity" />
         </ListItem>
-        <ListItem button>
+        <ListItem
+          button
+          onClick={() => {
+            localStorage.clear();
+            navigate('/login');
+          }}
+        >
           <ListItemIcon>
-            <Message sx={{ color: '#4263EB' }} />
+            <ExitToApp />
           </ListItemIcon>
-          <ListItemText primary="Messages" />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <Settings sx={{ color: '#4263EB' }} />
-          </ListItemIcon>
-          <ListItemText primary="Settings" />
-        </ListItem>
-      </List>
-
-      {/* Logout */}
-      <List>
-        <ListItem button>
-          <ListItemIcon>
-            <ExitToApp sx={{ color: '#FF6B6B' }} />
-          </ListItemIcon>
-          <ListItemText primary="Logout" sx={{ color: '#FF6B6B' }} />
+          <ListItemText primary="Logout" />
         </ListItem>
       </List>
     </Box>

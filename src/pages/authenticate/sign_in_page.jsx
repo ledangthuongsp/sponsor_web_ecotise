@@ -25,6 +25,12 @@ const SignIn = () => {
 
       console.log('Login successful:', response.data);
       localStorage.setItem('username', username); // Lưu username vào localStorage
+      // Lưu sponsorId vào localStorage
+    const sponsor = await axios.get(
+      `${API_CONFIG.BASE_URL}/sponsor/get-by-username`,
+      { params: { username } }
+    );
+    localStorage.setItem('sponsorId', sponsor.data.id);
       navigate('/dashboard'); // Điều hướng đến Dashboard
     } catch (err) {
       console.error('Login failed:', err.response?.data || err.message);

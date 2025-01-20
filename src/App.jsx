@@ -4,6 +4,8 @@ import LandingPage from './pages/landing/landing_page';
 import Signin from './pages/authenticate/sign_in_page'
 import Dashboard from './pages/dashboard/dashboard_page';
 import paths from './routes/paths';
+import Activity from './pages/activity/activity_page';
+import SponsorInfo from './components/sponsor_info';
 const App = () => {
     return (
         <Router>
@@ -16,6 +18,7 @@ const App = () => {
                 
                 {/* Route của Dashboard */}
                 <Route path={paths.dashboard} element={<Dashboard />} />
+                <Route path={paths.activity} element={<Activity />} />
             </Routes>
         </Router>
     );
