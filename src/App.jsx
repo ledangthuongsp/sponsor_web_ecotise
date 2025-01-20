@@ -5,7 +5,7 @@ import Signin from './pages/authenticate/sign_in_page'
 import Dashboard from './pages/dashboard/dashboard_page';
 import paths from './routes/paths';
 import Activity from './pages/activity/activity_page';
-import SponsorInfo from './components/sponsor_info';
+import DonationsPage from './pages/donation/donation_page';
 const App = () => {
     return (
         <Router>
@@ -15,10 +15,11 @@ const App = () => {
                 
                 {/* Route của Sign In */}
                 <Route path={paths.signin} element={<Signin />} />
-                
+    
                 {/* Route của Dashboard */}
                 <Route path={paths.dashboard} element={<Dashboard />} />
                 <Route path={paths.activity} element={<Activity />} />
+                <Route path={paths.donation} element={<DonationsPage />} />
             </Routes>
         </Router>
     );
