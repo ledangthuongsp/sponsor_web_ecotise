@@ -1,7 +1,7 @@
 import React from 'react';
 import './landing_page.css';
 import { useNavigate } from 'react-router-dom';
-import paths from 'routes/paths';
+import paths from '../../routes/paths';
 
 const handleSignInClick = (navigate) => {
     navigate(paths.signin); // Điều hướng tới route Sign In
