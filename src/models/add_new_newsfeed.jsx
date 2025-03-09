@@ -102,8 +102,8 @@ const AddNewsfeedModel = ({ open, onClose, onSuccess }) => {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6">Add Newsfeed</Typography>
-          <IconButton onClick={onClose}>
+          <Button variant="h6">Add Newsfeed</Button>
+          <IconButton onClick={open}>
             <Close />
           </IconButton>
         </Box>

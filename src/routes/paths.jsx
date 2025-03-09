@@ -4,7 +4,7 @@ const paths = {
     dashboard: '/dashboard',
     activity: '/activity',
     settings: '/settings',
-    donation: '/donation'
+    donation: '/donations'
 };
 
 export default paths;

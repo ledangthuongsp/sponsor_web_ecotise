@@ -2,24 +2,25 @@ import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
-  Tabs,
-  Tab,
   Card,
   CardContent,
-  CardActions,
+  CardMedia,
   Button,
-  Divider,
+  Grid,
+  Tabs,
+  Tab,
 } from '@mui/material';
+import Sidebar from '../../components/sidebar';
 import axios from 'axios';
 import API_CONFIG from '../../constants/api_config';
 
 const DonationsPage = () => {
-  const [tabValue, setTabValue] = useState(0);
   const [donations, setDonations] = useState({
     ongoing: [],
     upcoming: [],
     ended: [],
   });
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -40,80 +41,78 @@ const DonationsPage = () => {
     fetchDonations();
   }, []);
 
-  const handleRequestJoin = async (donationId) => {
-    try {
-      // TODO: Replace this with actual API call to request joining donation
-      alert(`Requested to join donation ID: ${donationId}`);
-    } catch (error) {
-      console.error('Failed to request joining donation:', error);
-    }
+  const handleRequest = (donationId) => {
+    alert(`Request thành công cho donation ID: ${donationId}`);
   };
 
   const handleChangeTab = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  const filterDonations = (status) => {
-    if (status === 'ongoing') return donations.ongoing;
-    if (status === 'upcoming') return donations.upcoming;
-    if (status === 'ended') return donations.ended;
-    return [];
-  };
+  const renderDonations = (donationsList) => (
+    <Grid container spacing={2}>
+      {donationsList.map((donation) => (
+        <Grid item xs={12} sm={6} md={4} key={donation.id}>
+          <Card>
+            {/* Hiển thị ảnh donation */}
+            {donation.coverImageUrl && donation.coverImageUrl.length > 0 && (
+              <CardMedia
+                component="img"
+                height="200"
+                image={donation.coverImageUrl[0]}
+                alt="Donation Cover"
+                style={{ objectFit: 'cover' }}
+              />
+            )}
+            <CardContent>
+              <Typography variant="h6">{donation.title}</Typography>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                {donation.description}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={() => handleRequest(donation.id)}
+              >
+                Request to Join
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Donations
-      </Typography>
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      {/* Sidebar */}
+      <Sidebar />
 
-      {/* Tabs */}
-      <Tabs
-        value={tabValue}
-        onChange={handleChangeTab}
-        variant="fullWidth"
-        textColor="primary"
-        indicatorColor="primary"
-        sx={{ mb: 3 }}
-      >
-        <Tab label="Ongoing" />
-        <Tab label="Upcoming" />
-        <Tab label="Ended" />
-      </Tabs>
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Donations
+        </Typography>
 
-      {/* Donation List */}
-      <Box>
-        {filterDonations(
-          tabValue === 0 ? 'ongoing' : tabValue === 1 ? 'upcoming' : 'ended'
-        ).length > 0 ? (
-          filterDonations(
-            tabValue === 0 ? 'ongoing' : tabValue === 1 ? 'upcoming' : 'ended'
-          ).map((donation) => (
-            <Card key={donation.id} sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6">{donation.name}</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {donation.description}
-                </Typography>
-              </CardContent>
-              <CardActions>
-                {tabValue === 0 && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleRequestJoin(donation.id)}
-                  >
-                    Request to Join
-                  </Button>
-                )}
-              </CardActions>
-              <Divider />
-            </Card>
-          ))
-        ) : (
-          <Typography variant="body1" color="textSecondary" align="center">
-            No donations to show.
-          </Typography>
-        )}
+        {/* Tabs */}
+        <Tabs
+          value={tabValue}
+          onChange={handleChangeTab}
+          variant="fullWidth"
+          textColor="primary"
+          indicatorColor="primary"
+          sx={{ mb: 3 }}
+        >
+          <Tab label="Ongoing" />
+          <Tab label="Upcoming" />
+          <Tab label="Ended" />
+        </Tabs>
+
+        {/* Hiển thị donation theo tab */}
+        {tabValue === 0 && renderDonations(donations.ongoing)}
+        {tabValue === 1 && renderDonations(donations.upcoming)}
+        {tabValue === 2 && renderDonations(donations.ended)}
       </Box>
     </Box>
   );

@@ -58,7 +58,7 @@ const Sidebar = () => {
           button
           onClick={() => {
             localStorage.clear();
-            navigate('/login');
+            navigate('/');
           }}
         >
           <ListItemIcon>

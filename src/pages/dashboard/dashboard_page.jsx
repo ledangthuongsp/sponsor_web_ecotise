@@ -8,12 +8,16 @@ import {
   Button,
   Grid,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
 } from '@mui/material';
-import { green } from '@mui/material/colors';
 import axios from 'axios';
 import API_CONFIG from '../../constants/api_config';
-import Header from '../../components/header';
 import Sidebar from '../../components/sidebar';
+import Header from '../../components/Header';
 import Chart from 'react-apexcharts';
 
 const Dashboard = () => {
@@ -21,7 +25,8 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [qrStats, setQrStats] = useState(null); // QR code statistics
-  const [participants, setParticipants] = useState(0); // Participant statistics
+  const [openDialog, setOpenDialog] = useState(false); // Modal state
+  const [selectedNewsfeed, setSelectedNewsfeed] = useState(null); // Selected newsfeed for editing
 
   useEffect(() => {
     const fetchNewsfeeds = async () => {
@@ -30,7 +35,7 @@ const Dashboard = () => {
         const sponsorId = localStorage.getItem('sponsorId');
         if (!sponsorId) throw new Error('Sponsor ID not found in localStorage');
 
-        // Fetch newsfeed
+        // Fetch newsfeeds
         const response = await axios.get(
           `${API_CONFIG.BASE_URL}/newsfeed/get-newsfeed-by-sponsor-id`,
           { params: { sponsorId } }
@@ -42,13 +47,6 @@ const Dashboard = () => {
           `${API_CONFIG.BASE_URL}/sponsor/qrcode/active/${sponsorId}`
         );
         setQrStats(qrResponse.data);
-
-        // Calculate participants
-        const participantCount = response.data.reduce(
-          (total, feed) => total + (feed.pointForActivity || 0),
-          0
-        );
-        setParticipants(participantCount);
       } catch (err) {
         console.error('Failed to fetch data:', err);
         setError('Failed to fetch data.');
@@ -70,9 +68,30 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreateActivity = () => {
-    alert('Redirect to Create Activity form.');
-    // Navigate to a Create Activity Form
+  const handleOpenDialog = (newsfeed) => {
+    setSelectedNewsfeed(newsfeed);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedNewsfeed(null);
+    setOpenDialog(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      await axios.put(`${API_CONFIG.BASE_URL}/newsfeed/update/${selectedNewsfeed.id}`, selectedNewsfeed);
+      setNewsfeeds((prev) =>
+        prev.map((feed) =>
+          feed.id === selectedNewsfeed.id ? selectedNewsfeed : feed
+        )
+      );
+      alert('Newsfeed updated successfully!');
+      handleCloseDialog();
+    } catch (err) {
+      console.error('Failed to update newsfeed:', err);
+      alert('Failed to update newsfeed.');
+    }
   };
 
   return (
@@ -118,10 +137,10 @@ const Dashboard = () => {
                             Points: {newsfeed.pointForActivity || 0}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Start: {new Date(newsfeed.startedAt).toLocaleString()}
+                            Start: {newsfeed.startedAt ? new Date(newsfeed.startedAt).toLocaleString() : 'N/A'}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            End: {new Date(newsfeed.endedAt).toLocaleString()}
+                            End: {newsfeed.endedAt ? new Date(newsfeed.endedAt).toLocaleString() : 'N/A'}
                           </Typography>
                         </CardContent>
                         <Box
@@ -131,7 +150,11 @@ const Dashboard = () => {
                             padding: 2,
                           }}
                         >
-                          <Button variant="outlined" color="primary">
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => handleOpenDialog(newsfeed)}
+                          >
                             Update
                           </Button>
                           <Button
@@ -164,6 +187,77 @@ const Dashboard = () => {
           )}
         </Box>
       </Box>
+
+      {/* Modal for Editing Newsfeed */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth>
+        <DialogTitle>Edit Activity</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Content"
+            margin="normal"
+            value={selectedNewsfeed?.content || ''}
+            onChange={(e) =>
+              setSelectedNewsfeed((prev) => ({ ...prev, content: e.target.value }))
+            }
+          />
+          <TextField
+            fullWidth
+            label="Points"
+            margin="normal"
+            type="number"
+            value={selectedNewsfeed?.pointForActivity || 0}
+            onChange={(e) =>
+              setSelectedNewsfeed((prev) => ({
+                ...prev,
+                pointForActivity: Number(e.target.value),
+              }))
+            }
+          />
+          <TextField
+            fullWidth
+            label="Start Date"
+            margin="normal"
+            type="datetime-local"
+            value={
+              selectedNewsfeed?.startedAt
+                ? new Date(selectedNewsfeed.startedAt).toISOString().slice(0, -1)
+                : ''
+            }
+            onChange={(e) =>
+              setSelectedNewsfeed((prev) => ({
+                ...prev,
+                startedAt: new Date(e.target.value).toISOString(),
+              }))
+            }
+          />
+          <TextField
+            fullWidth
+            label="End Date"
+            margin="normal"
+            type="datetime-local"
+            value={
+              selectedNewsfeed?.endedAt
+                ? new Date(selectedNewsfeed.endedAt).toISOString().slice(0, -1)
+                : ''
+            }
+            onChange={(e) =>
+              setSelectedNewsfeed((prev) => ({
+                ...prev,
+                endedAt: new Date(e.target.value).toISOString(),
+              }))
+            }
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
