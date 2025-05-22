@@ -9,5 +9,4 @@ export default defineConfig({
           '@': '/src',
       },
   },
-  base: '/sponsor_web_ecotise/',
 })
