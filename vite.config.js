@@ -9,4 +9,5 @@ export default defineConfig({
           '@': '/src', // Alias cho thư mục src
       },
   },
+  base:'/sponsor_web_ecotise/'
 })
