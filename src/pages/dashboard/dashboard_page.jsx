@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [openDialog, setOpenDialog] = useState(false); // Modal state
   const [selectedNewsfeed, setSelectedNewsfeed] = useState(null); // Selected newsfeed for editing
 
+  // Fetch data
   useEffect(() => {
     const fetchNewsfeeds = async () => {
       setLoading(true);
@@ -58,6 +59,7 @@ const Dashboard = () => {
     fetchNewsfeeds();
   }, []);
 
+  // Handle delete
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${API_CONFIG.BASE_URL}/newsfeed/delete/${id}`);
@@ -68,16 +70,19 @@ const Dashboard = () => {
     }
   };
 
+  // Open Edit modal
   const handleOpenDialog = (newsfeed) => {
     setSelectedNewsfeed(newsfeed);
     setOpenDialog(true);
   };
 
+  // Close Edit modal
   const handleCloseDialog = () => {
     setSelectedNewsfeed(null);
     setOpenDialog(false);
   };
 
+  // Save changes to newsfeed
   const handleSave = async () => {
     try {
       await axios.put(`${API_CONFIG.BASE_URL}/newsfeed/update/${selectedNewsfeed.id}`, selectedNewsfeed);

@@ -1,0 +1,30 @@
+.sider {
+  height: 100vh;
+  position: sticky !important;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  background-color: white !important;
+}
+
+.sider-header {
+  padding: 2.4rem 2.6rem 1rem 2.6rem;
+}
+
+.sider-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ant-menu-item {
+  padding-top: 1.4rem !important;
+  padding-bottom: 1.4rem !important;
+  font-size: 1.1rem;
+}
+
+.ant-menu-item-selected {
+  background-color: #e3f4ee !important;
+  font-weight: 600;
+  color: #68bb9e !important;
+}

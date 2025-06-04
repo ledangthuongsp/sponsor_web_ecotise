@@ -18,7 +18,7 @@
 }
 
 .hello-logo {
-  width: 120px;
+  width: 200px;
   color: #10a54a;
   margin: 0 auto 32px auto;
   display: block;
@@ -30,16 +30,19 @@
   font-weight: bold;
   font-size: 2rem;
 }
+
 .hello-text-white {
   color: #ffffff;
   font-weight: normal;
   font-size: 0.75rem;
 }
+
 .hello-text-black {
   color: #000000;
   font-weight: normal;
   font-size: 0.75rem;
 }
+
 .hello-btn {
   display: flex;
   justify-content: space-between;

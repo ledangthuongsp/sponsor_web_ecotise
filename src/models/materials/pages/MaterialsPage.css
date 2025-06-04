@@ -1,0 +1,51 @@
+.search-input {
+    width: 400px;
+  }
+  
+  .ant-btn-primary.ant-input-search-button {
+    background-color: #8dd3bb;
+  }
+  
+  .ant-input-outlined:hover {
+    border-color: #8dd3bb !important;
+  }
+  
+  .ant-input-outlined:focus {
+    border-color: #8dd3bb !important;
+  }
+  
+  .form-container {
+    width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    
+  }
+  
+  .form-title {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .ant-form-item-label > label {
+    font-weight: bold;
+  }
+  
+  .ant-input,
+  .ant-picker,
+  .ant-upload-list-picture-card-container {
+    border-radius: 4px;
+  }
+  
+  
+  .ant-btn-primary {
+    width: 100%;
+    border-radius: 4px;
+    background-color: #1890ff;
+    border-color: #1890ff;
+  }
+  
+  .ant-btn-primary:hover {
+    background-color: #40a9ff;
+    border-color: #40a9ff;
+  }
+  

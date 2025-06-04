@@ -1,11 +1,86 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/icons/icon-logo.svg";
 import background from "../../assets/images/background.svg";
 import "../../styles/sign_in.css";
+import { useState } from "react";
+import axios from "axios";
 
 export default function SignIn() {
   const location = useLocation();
-  const role = location.state?.role || "admin";
+  const role = location.state?.role || "admin"; // Default role is admin
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    let endpoint = "";
+    let fetchOptions = {
+      method: "POST",
+      headers: {},
+    };
+
+    if (role === "admin") {
+      // Admin login
+      endpoint = "https://ecots-be.onrender.com/auth/signin";
+      fetchOptions.headers["Content-Type"] = "application/json";
+      fetchOptions.body = JSON.stringify({ username, password });
+    } else if (role === "sponsor") {
+      // Sponsor login
+      try {
+        const response = await axios.post(
+          "https://ecots-be.onrender.com/sponsor/login",
+          null,
+          { params: { username, password } }
+        );
+        if (response.data.trim() === "Login successful") {
+          localStorage.setItem("role", "SPONSOR");
+          localStorage.setItem("username", username); // Store username
+          navigate("/dashboard-sponsor"); // Redirect to sponsor dashboard
+        } else {
+          setError(response.data || "Login failed");
+        }
+      } catch (err) {
+        setError(err.response?.data || err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    } else {
+      setError("Invalid role");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(endpoint, fetchOptions);
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (data.role === "ADMIN") {
+        // Admin login success
+        localStorage.setItem("role", "ADMIN");
+        localStorage.setItem("username", username);
+        navigate("/dashboard-admin"); // Redirect to admin dashboard
+      } else {
+        setError("You do not have access with this account.");
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="signin-container">
@@ -15,13 +90,15 @@ export default function SignIn() {
         <h2 className="signin-title">Welcome Back</h2>
         <p className="signin-role-text">You are signing in as: <b>{role}</b></p>
 
-        <form className="signin-form">
-          <label htmlFor="email">Email</label>
+        <form className="signin-form" onSubmit={handleSubmit}>
+          <label htmlFor="username">Username</label>
           <input
-            id="email"
-            type="email"
-            placeholder="Example@email.com"
+            id="username"
+            type="text"
+            placeholder="Your username"
             required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <label htmlFor="password" className="password-label">Password</label>
           <input
@@ -29,12 +106,15 @@ export default function SignIn() {
             type="password"
             placeholder="at least 8 characters"
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <Link to="/forgot-password" className="forgot-password">
             Forgot Password?
           </Link>
-          <button type="submit" className="signin-button">
-            Sign in
+          {error && <div className="signin-error">{error}</div>}
+          <button type="submit" className="signin-button" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
       </div>
