@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import { Card, Col, Row, Statistic, Select } from "antd";
 import { Bar, Line } from "react-chartjs-2";
@@ -10,7 +10,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 
 const { Option } = Select;
 
-const API_BASE_URL = "https://ecots-be.onrender.com";
+import { BASE_API_URL } from "../../../constants/APIConstants";
 
 const OverviewPage = () => {
   const [statistics, setStatistics] = useState([]);
@@ -22,7 +22,7 @@ const OverviewPage = () => {
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/statistics/by-period?period=${period}`);
+        const response = await axios.get(`${BASE_API_URL}/api/statistics/by-period?period=${period}`);
         setStatistics(response.data);
       } catch (error) {
         console.error("Failed to fetch statistics:", error);
@@ -31,7 +31,7 @@ const OverviewPage = () => {
 
     const fetchTotalStatistics = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/statistics/total`);
+        const response = await axios.get(`${BASE_API_URL}/api/statistics/total`);
         setTotalStatistics(response.data);
       } catch (error) {
         console.error("Failed to fetch total statistics:", error);
@@ -40,7 +40,7 @@ const OverviewPage = () => {
 
     const fetchCurrentWeekStatistics = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/statistics/current-week`);
+        const response = await axios.get(`${BASE_API_URL}/api/statistics/current-week`);
         setCurrentWeekStats(response.data);
       } catch (error) {
         console.error("Failed to fetch current week statistics:", error);
@@ -49,7 +49,7 @@ const OverviewPage = () => {
 
     const fetchLastWeekStatistics = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/statistics/last-week`);
+        const response = await axios.get(`${BASE_API_URL}/api/statistics/last-week`);
         setLastWeekStats(response.data);
       } catch (error) {
         console.error("Failed to fetch last week statistics:", error);

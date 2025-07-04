@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Layout, Menu, Button } from "antd";
-import { Link } from "react-router-dom"; // Optional, if you still want to use Link for navigation
+import { useState } from "react";
+import { Layout, Menu } from "antd";
 import DashboardIcon from "../../assets/icons/DashboardIcon";
 import Logo from "../../assets/logo.png";
 import Icon from "../../assets/icons";
 import "../../layouts/MainLayout.css";  // Assuming styles for your layout are in this file
+import { CiGift } from "react-icons/ci";
 
 // Importing pages to be displayed in Content
 import Overview from "../../models/overview/pages/OverviewPage";
@@ -15,6 +15,7 @@ import AchievementLevels from "../../models/achivements/AchivementLevelPage";
 import EmployeeManagement from "../../models/employees/EmployeePage";
 import DetectResponse from "../../models/detect_response/DetectResponsePage";
 import QuizManagement from "../../models/quiz/QuizManagementPage";
+import RewardManagement from "../../models/rewards/RewardPages";
 
 const { Sider, Content } = Layout;
 
@@ -59,6 +60,11 @@ const items = [
         icon: <img src={Icon.QuizIcon} alt="Quiz" style={{ width: '24px', height: '24px' }} />,
         label: "Quiz Management",
     },
+    {
+        key: "10",
+        icon: <CiGift size={24} />,
+        label: "Reward Management",
+    },
 ];
 
 const AdminDashboardPage = () => {
@@ -88,6 +94,8 @@ const AdminDashboardPage = () => {
                 return <DetectResponse />;
             case "9":
                 return <QuizManagement />;
+            case "10":
+                return <RewardManagement />;
             default:
                 return <h1>Page Not Found</h1>;
         }

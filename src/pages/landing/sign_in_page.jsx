@@ -4,7 +4,7 @@ import background from "../../assets/images/background.svg";
 import "../../styles/sign_in.css";
 import { useState } from "react";
 import axios from "axios";
-
+import { BASE_API_URL } from "../../constants/APIConstants";
 export default function SignIn() {
   const location = useLocation();
   const role = location.state?.role || "admin"; // Default role is admin
@@ -26,14 +26,14 @@ export default function SignIn() {
 
     if (role === "admin") {
       // Admin login
-      endpoint = "https://ecots-be.onrender.com/auth/signin";
+      endpoint = `${BASE_API_URL}/auth/signin`;
       fetchOptions.headers["Content-Type"] = "application/json";
       fetchOptions.body = JSON.stringify({ username, password });
     } else if (role === "sponsor") {
       // Sponsor login
       try {
         const response = await axios.post(
-          "https://ecots-be.onrender.com/sponsor/login",
+          `${BASE_API_URL}/sponsor/login`,
           null,
           { params: { username, password } }
         );

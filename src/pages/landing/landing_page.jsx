@@ -74,7 +74,7 @@ const HeroSection = () => (
       <img src={leafLight} alt="leaf light" className="hero-leaf" />
     </div>
     <div className="hero-image-container">
-      <img src={heroImg} alt="Tree in hand" style={{ width: "100%", height: "auto", objectFit: "contain" }} />
+      <img src={heroImg} alt="Tree in hand" />
       <div className="hero-overlay-top"></div>
       <div className="hero-overlay-bottom"></div>
     </div>
@@ -115,7 +115,7 @@ const WhyChoose = () => {
       <div className="why-grid">
         {items.map(({ icon, title, desc }, i) => (
           <div key={i} className="why-card">
-            <img src={icon} alt={title} style={{ width: 64, height: 64, objectFit: "contain" }} />
+            <img src={icon} alt={title} />
             <h3>{title}</h3>
             <p>{desc}</p>
           </div>
@@ -246,7 +246,6 @@ const SubscribeSection = () => (
     <img
       src="https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
       alt="eco cutlery"
-      style={{ width: "100%", height: "auto", objectFit: "cover", maxHeight: 300 }}
     />
     <div className="subscribe-content">
       <h3>Subscribe to our newsletter</h3>
@@ -292,7 +291,7 @@ const Footer = () => (
     <p className="copy">
       Terms & services <br /> Ecotise @ all right reserved 2024
     </p>
-    <img src={earthIcon} alt="earth" className="earth" style={{ width: 80, height: 80, objectFit: "contain" }} />
+    <img src={earthIcon} alt="earth" className="earth" />
   </footer>
 );
 

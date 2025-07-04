@@ -29,8 +29,6 @@ export const getAllLocations = async () => {
 export const createLocation = async (locationName, description, address, latitude, longitude, formData) => {
     try {
 
-
-
         const response = await axios.post(`${BASE_API_URL}/location/create-new-location?locationName=${locationName}&description=${description}&address=${address}&latitude=${latitude}&longitude=${longitude}`, formData,
            );
         console.log(response.data);

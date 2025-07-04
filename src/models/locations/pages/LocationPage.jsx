@@ -279,7 +279,7 @@ const LocationPage = () => {
         </Modal>
       </Flex>
       <Table dataSource={locations}>
-        <Column title="ID" dataIndex="id" key="id" />
+        <Column title="ID" dataIndex="id" key="id" sorter={(a, b) => a.id - b.id} />
 
         <Column title="Name" dataIndex="locationName" key="locationName" />
         <Column title="Description" dataIndex="description" key="description" />
