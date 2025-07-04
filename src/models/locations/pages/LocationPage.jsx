@@ -39,17 +39,19 @@ const LocationPage = () => {
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
-    console.log("Form values:", values);
-
     const formData = new FormData();
 
-    formData.append(
-      "backGroundImage",
-      values.backGroundImgUrl[0].originFileObj
-    );
+    // Append ảnh nền nếu người dùng chọn ảnh mới
+    const backgroundFile = values.backGroundImgUrl?.[0];
+    if (backgroundFile && backgroundFile.originFileObj) {
+      formData.append("backGroundImage", backgroundFile.originFileObj);
+    }
 
-    values.imgDetailsUrl.forEach((file) => {
-      formData.append("imageDetails", file.originFileObj);
+    // Append ảnh chi tiết nếu có ảnh mới
+    values.imgDetailsUrl?.forEach((file) => {
+      if (file.originFileObj) {
+        formData.append("imageDetails", file.originFileObj);
+      }
     });
 
     setLoading(true);
@@ -65,30 +67,24 @@ const LocationPage = () => {
             formData
           )
         : await updateLocation(
-            selectId,
-
-            values.description,
-            values.address,
-            values.latitude,
-            values.longitude,
-            formData
-          );
-
+          selectId,
+          values.locationName, // <-- TRUYỀN THÊM
+          values.description,
+          values.address,
+          values.latitude,
+          values.longitude,
+          formData
+        );
     if (success) {
       setModalOpen(false);
       form.resetFields();
-
-      if (event === "add") {
-        message.success("Added successfully!");
-      } else {
-        message.success("Updated successfully!");
-      }
-
+      message.success(event === "add" ? "Added successfully!" : "Updated successfully!");
       callGetLocations();
     }
 
     setLoading(false);
   };
+
 
   const normFile = (e) => {
     console.log("Upload event:", e);

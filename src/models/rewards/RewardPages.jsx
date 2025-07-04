@@ -44,7 +44,8 @@ const RewardPages = () => {
   const [allLocations, setAllLocations] = useState([]);
   const [importQuantities, setImportQuantities] = useState({});
   const [lowStockData, setLowStockData] = useState([]);
-  const [stockChartData, setStockChartData] = useState([]);
+  const [stockChartData, setStockChartData] = useState({ bar: [], pie: [] });
+
 
   const callGetRewards = async () => {
     const res = await getAllRewardItem();
@@ -53,14 +54,30 @@ const RewardPages = () => {
   };
 
   const fetchStockChartData = async (rewardItems) => {
-    let allData = [];
-    for (let reward of rewardItems) {
-      const stockList = await getStockByRewardItemId(reward.id);
-      const total = stockList.reduce((acc, curr) => acc + (curr.stock || 0), 0);
-      allData.push({ type: reward.itemName, value: total });
+    const allLocs = await getAllLocations();
+    let barChartData = [];
+    let pieChartData = [];
+
+    for (const reward of rewardItems) {
+      const stocks = await getStockByRewardItemId(reward.id);
+      const total = stocks.reduce((acc, curr) => acc + (curr.stock || 0), 0);
+      barChartData.push({ type: reward.itemName, value: total });
+
+      for (const stock of stocks) {
+        const location = allLocs.find((l) => l.id === stock.locationId);
+        if (location && stock.stock > 0) {
+          pieChartData.push({
+            location: location.locationName,
+            type: reward.itemName,
+            value: stock.stock,
+          });
+        }
+      }
     }
-    setStockChartData(allData);
+
+    setStockChartData({ bar: barChartData, pie: pieChartData });
   };
+
 
   const fetchStockData = async (rewardId) => {
     const locs = await getAllLocations();
@@ -73,25 +90,28 @@ const RewardPages = () => {
   const fetchLowStock = async () => {
     const all = await getAllLocations();
     const result = [];
+
     for (const reward of rewards) {
+      const stocks = await getStockByRewardItemId(reward.id);
       for (const loc of all) {
-        const items = await getLowStockItems(loc.id, 3);
-        items.forEach(item => {
-          if (item.rewardItemId === reward.id) {
-            result.push({
-              key: `${reward.id}-${loc.id}`,
-              rewardItemName: reward.itemName,
-              locationName: loc.locationName,
-              locationId: loc.id,
-              rewardItemId: reward.id,
-              stock: item.stock,
-            });
-          }
-        });
+        const stockItem = stocks.find(s => s.locationId === loc.id);
+        const stock = stockItem?.stock || 0;
+        if (stock < 3) {
+          result.push({
+            key: `${reward.id}-${loc.id}`,
+            rewardItemName: reward.itemName,
+            rewardItemId: reward.id,
+            locationName: loc.locationName,
+            locationId: loc.id,
+            stock: stock,
+          });
+        }
       }
     }
+
     setLowStockData(result);
   };
+
 
   useEffect(() => {
     callGetRewards();
@@ -313,20 +333,38 @@ const RewardPages = () => {
       {/* PART 3: Charts */}
       <Divider orientation="left">Reward Stock Overview</Divider>
       <Flex gap="large" wrap="wrap">
+        {/* Chart tổng số reward item */}
         <div style={{ width: 400 }}>
           <Typography.Title level={5}>Total Stock by Reward</Typography.Title>
-          <Bar data={stockChartData} xField="value" yField="type" height={300} />
-        </div>
-        <div style={{ width: 400 }}>
-          <Typography.Title level={5}>Stock Distribution</Typography.Title>
-          <Pie
-            data={stockChartData}
-            angleField="value"
-            colorField="type"
-            radius={0.9}
-            label={{ type: "outer", content: "{name} {percentage}" }}
+          <Bar
+            data={stockChartData.bar}
+            xField="value"
+            yField="type"
+            height={300}
           />
         </div>
+
+        {/* Biểu đồ tỉ lệ trong từng location */}
+        <div style={{ width: 400 }}>
+          <Typography.Title level={5}>Stock Distribution per Location</Typography.Title>
+          {Array.from(new Set(stockChartData.pie.map(d => d.location))).map((location) => {
+            const data = stockChartData.pie.filter((d) => d.location === location);
+            return (
+              <div key={location} style={{ marginBottom: 24 }}>
+                <Typography.Text strong>{location}</Typography.Text>
+                <Pie
+                  data={data}
+                  angleField="value"
+                  colorField="type"
+                  radius={0.8}
+                  height={250}
+                  label={{ type: "outer", content: "{name} {percentage}" }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
       </Flex>
     </Flex>
   );
