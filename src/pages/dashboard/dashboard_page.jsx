@@ -9,6 +9,8 @@ import "../../layouts/MainLayout.css";  // Assuming styles for your layout are i
 import Overview from "../../models/sponsor/overviews/SponsorOverviewPage";
 import SponsorNewsfeedPage from '../../models/sponsor/newsfeeds/SponsorNewsfeedPage';
 import SponsorQRCodeManagementPage from "../../models/sponsor/qrcode/SponsorQRCodeManagementPage";
+import DonationManagement from "../../models/donations/pages/DonationPage";
+import LocationManagement from "../../models/locations/pages/LocationPage";
 // import RewardManagement from "../../models/rewards/RewardPages";
 
 const { Sider, Content } = Layout;
@@ -29,6 +31,16 @@ const items = [
         icon: <img src={Icon.MaterialIcon} alt="QR Code" style={{ width: '24px', height: '24px' }} />,
         label: "Newsfeed QR Code",
     },
+    {
+        key: "4",
+        icon: <img src={Icon.DonationIcon} alt="Donation" style={{ width: '24px', height: '24px' }} />,
+        label: "Donation Management",
+    },
+    {
+        key: "5",
+        icon: <img src={Icon.LocationIcon} alt="Location" style={{ width: '24px', height: '24px' }} />,
+        label: "Location Management",
+    },
 ];
 
 const DashboardPage = () => {
@@ -48,13 +60,16 @@ const DashboardPage = () => {
                 return <SponsorNewsfeedPage />;
             case "3":
                 return <SponsorQRCodeManagementPage />;
+            case "4":
+                return <DonationManagement />;
+            case "5":
+                return <LocationManagement />;
             // case "10":
             //     return <RewardManagement />;
             default:
                 return <h1>Page Not Found</h1>;
         }
     };
-
     return (
         <Layout style={{ minHeight: "100vh" }}>
             {/* Sidebar */}

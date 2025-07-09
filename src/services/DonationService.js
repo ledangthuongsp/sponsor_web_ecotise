@@ -1,29 +1,33 @@
 import axios from 'axios';
-import {  format } from "date-fns";
 import {Donation} from '../models/Donation'
 import { BASE_API_URL } from '../constants/APIConstants';
 export const getAllDonations = async () => {
     try {
         const response = await axios.get(`${BASE_API_URL}/donate/get-all-donations`);
-        console.log(response.data);
 
         const donations = response.data.map(donation => new Donation(
             donation.id,
             donation.title,
             donation.name,
             donation.description,
-            donation.startDate,
-            donation.endDate,
+            new Date(donation.startDate),
+            new Date(donation.endDate),
             donation.sponsorImages,
             donation.coverImageUrl,
-            donation.totalDonations
-        ))
-        return donations
+            donation.totalDonations,
+            donation.sponsorId,
+            donation.sponsorName,
+            new Date(donation.createdAt),
+            new Date(donation.updatedAt)
+        ));
+
+        return donations;
     } catch (e) {
         console.error('Error fetching:', e);
         throw e;
     }
 }
+
 
 export const createDonation = async (title, name, description, startDate, endDate, formData) => {
 

@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import {useState } from "react";
 import { Layout, Menu } from "antd";
 import DashboardIcon from "../../assets/icons/DashboardIcon";
 import Logo from "../../assets/logo.png";
@@ -8,8 +9,8 @@ import { CiGift } from "react-icons/ci";
 
 // Importing pages to be displayed in Content
 import Overview from "../../models/overview/pages/OverviewPage";
-import DonationManagement from "../../models/donations/pages/DonationPage";
-import LocationManagement from "../../models/locations/pages/LocationPage";
+// import DonationManagement from "../../models/donations/pages/DonationPage";
+// import LocationManagement from "../../models/locations/pages/LocationPage";
 import MaterialManagement from "../../models/materials/pages/MaterialsPage";
 import AchievementLevels from "../../models/achivements/AchivementLevelPage";
 import EmployeeManagement from "../../models/employees/EmployeePage";
@@ -25,16 +26,16 @@ const items = [
         icon: <DashboardIcon />,
         label: "Dashboard",
     },
-    {
-        key: "2",
-        icon: <img src={Icon.DonationIcon} alt="Donation" style={{ width: '24px', height: '24px' }} />,
-        label: "Donation Management",
-    },
-    {
-        key: "4",
-        icon: <img src={Icon.LocationIcon} alt="Location" style={{ width: '24px', height: '24px' }} />,
-        label: "Location Management",
-    },
+    // {
+    //     key: "2",
+    //     icon: <img src={Icon.DonationIcon} alt="Donation" style={{ width: '24px', height: '24px' }} />,
+    //     label: "Donation Management",
+    // },
+    // {
+    //     key: "4",
+    //     icon: <img src={Icon.LocationIcon} alt="Location" style={{ width: '24px', height: '24px' }} />,
+    //     label: "Location Management",
+    // },
     {
         key: "5",
         icon: <img src={Icon.MaterialIcon} alt="Material" style={{ width: '24px', height: '24px' }} />,
@@ -80,10 +81,10 @@ const AdminDashboardPage = () => {
         switch (activeContent) {
             case "1":
                 return <Overview />;
-            case "2":
-                return <DonationManagement />;
-            case "4":
-                return <LocationManagement />;
+            // case "2":
+            //     return <DonationManagement />;
+            // case "4":
+            //     return <LocationManagement />;
             case "5":
                 return <MaterialManagement />;
             case "6":

@@ -1,14 +1,19 @@
 export class Donation {
-    id
-    title
-    name
-    description
-    startDate
-    endDate
-    sponsorImages
-    coverImages
-    totalDonations
-    constructor(id, title, name, description, startDate, endDate, sponsorImages, coverImages, totalDonations) {
+    constructor(
+        id,
+        title,
+        name,
+        description,
+        startDate,
+        endDate,
+        sponsorImages,
+        coverImageUrl,
+        totalDonations,
+        sponsorId,
+        sponsorName,
+        createdAt,
+        updatedAt
+    ) {
         this.id = id;
         this.title = title;
         this.name = name;
@@ -16,8 +21,11 @@ export class Donation {
         this.startDate = startDate;
         this.endDate = endDate;
         this.sponsorImages = sponsorImages;
-        this.coverImages = coverImages;
-        this.totalDonations = totalDonations
+        this.coverImageUrl = coverImageUrl;
+        this.totalDonations = totalDonations;
+        this.sponsorId = sponsorId;
+        this.sponsorName = sponsorName;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }
-

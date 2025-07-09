@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Card, Row, Col, Button, Input, Modal, Form, DatePicker, Upload, message, List, Spin } from 'antd';
+import {
+    Card, Row, Col, Button, Input, Modal, Form,
+    DatePicker, Upload, message, List
+} from 'antd';
 import axios from 'axios';
 import { BASE_API_URL } from '../../../constants/APIConstants';
 import moment from 'moment';
 import { UploadOutlined } from '@ant-design/icons';
+import AddNewsfeedModal from './AddNewsfeedModal';
+import dayjs from "dayjs";
 
 const SponsorNewsfeedPage = () => {
     const [newsfeeds, setNewsfeeds] = useState([]);
@@ -11,79 +16,50 @@ const SponsorNewsfeedPage = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editNewsfeed, setEditNewsfeed] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
+    const [isAddMode, setIsAddMode] = useState(false);
     const [sponsorId, setSponsorId] = useState(null);
     const [fileList, setFileList] = useState([]);
-    const [selectedNewsfeed, setSelectedNewsfeed] = useState(null); // For selected newsfeed to fetch poll details
+    const [selectedNewsfeed, setSelectedNewsfeed] = useState(null);
+
     const sponsorUsername = localStorage.getItem("username");
 
-    // Fetch sponsorId using sponsor username
+    const fetchNewsfeeds = async () => {
+        if (!sponsorId) return;
+        setLoading(true);
+        try {
+            const response = await axios.get(`${BASE_API_URL}/newsfeed/get-newsfeed-by-sponsor-id?sponsorId=${sponsorId}`);
+            setNewsfeeds(response.data);
+        } catch (error) {
+            message.error('Failed to load newsfeeds');
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
         const fetchSponsorId = async () => {
             try {
-                if (!sponsorUsername) {
-                    message.error('Username is not available in localStorage');
-                    return;
-                }
-                const response = await axios.get(`http://localhost:7050/sponsor/get-by-username?username=${sponsorUsername}`);
+                const response = await axios.get(`${BASE_API_URL}/sponsor/get-by-username?username=${sponsorUsername}`);
                 if (response.data.id) {
                     setSponsorId(response.data.id);
-                } else {
-                    message.error('Sponsor ID not found');
                 }
             } catch (error) {
-                console.error("Error fetching sponsorId:", error);
                 message.error('Failed to fetch sponsor ID');
             }
         };
-
-        if (sponsorUsername) {
-            fetchSponsorId();
-        }
+        if (sponsorUsername) fetchSponsorId();
     }, [sponsorUsername]);
 
-    // Fetch all newsfeeds for the sponsor
     useEffect(() => {
-        if (!sponsorId) return;
-
-        const fetchNewsfeeds = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get(`${BASE_API_URL}/newsfeed/get-newsfeed-by-sponsor-id?sponsorId=${sponsorId}`);
-                setNewsfeeds(response.data);
-            } catch (error) {
-                message.error('Failed to load newsfeeds');
-            }
-            setLoading(false);
-        };
-
         fetchNewsfeeds();
     }, [sponsorId]);
 
-    // Fetch poll details and votes for a specific newsfeed
-    const fetchPollDetails = async (pollId) => {
-        try {
-            const response = await axios.get(`${BASE_API_URL}/poll/by-newsfeed/${pollId}`);
-            setSelectedNewsfeed({
-                ...selectedNewsfeed,
-                pollVotes: response.data.pollOptions, // Assume pollOptions contain votes and other details
-            });
-        } catch (error) {
-            message.error('Failed to load poll details');
-        }
-    };
-
-    // Handle add new newsfeed
     const handleAdd = () => {
-        setIsEditing(false);
-        setEditNewsfeed(null);
-        setFileList([]);
+        setIsAddMode(true);
         setIsModalVisible(true);
     };
 
-    // Handle edit existing newsfeed
     const handleEdit = (newsfeed) => {
-        setIsEditing(true);
+        setIsAddMode(false);
         setEditNewsfeed({
             ...newsfeed,
             startedAt: newsfeed.startedAt ? moment(newsfeed.startedAt) : null,
@@ -93,18 +69,16 @@ const SponsorNewsfeedPage = () => {
         setIsModalVisible(true);
     };
 
-    // Handle delete newsfeed
     const handleDelete = async (newsfeedId) => {
         try {
             await axios.delete(`${BASE_API_URL}/newsfeed/delete/${newsfeedId}`);
-            setNewsfeeds(newsfeeds.filter(newsfeed => newsfeed.id !== newsfeedId));
-            message.success('Newsfeed deleted successfully');
+            setNewsfeeds(newsfeeds.filter(nf => nf.id !== newsfeedId));
+            message.success('Newsfeed deleted');
         } catch (error) {
             message.error('Failed to delete newsfeed');
         }
     };
 
-    // Save new or edited newsfeed
     const handleSave = async (values) => {
         try {
             const newFiles = fileList.filter(file => !file.url);
@@ -112,63 +86,96 @@ const SponsorNewsfeedPage = () => {
 
             if (newFiles.length > 0) {
                 const formData = new FormData();
-                newFiles.forEach((file) => {
-                    formData.append('files', file.originFileObj);
+                newFiles.forEach(file => formData.append('files', file.originFileObj));
+                const uploadRes = await axios.post(`${BASE_API_URL}/upload`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
                 });
-                const uploadResponse = await axios.post(`${BASE_API_URL}/upload`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                mediaUrls = mediaUrls.concat(uploadResponse.data.urls);
+                mediaUrls = mediaUrls.concat(uploadRes.data.urls);
             }
 
             const payload = {
                 ...values,
-                startedAt: values.startedAt ? values.startedAt.toISOString() : null,
-                endedAt: values.endedAt ? values.endedAt.toISOString() : null,
-                sponsorId: sponsorId,
-                mediaUrls: mediaUrls,
+                startedAt: dayjs(values.startedAt).format("YYYY-MM-DD HH:mm:ss"),
+                endedAt: dayjs(values.endedAt).format("YYYY-MM-DD HH:mm:ss"),
+                sponsorId,
+                mediaUrls
             };
 
-            if (isEditing) {
-                await axios.put(`${BASE_API_URL}/newsfeed/update/${editNewsfeed.id}`, payload);
-                setNewsfeeds(newsfeeds.map(newsfeed => (newsfeed.id === editNewsfeed.id ? { ...newsfeed, ...payload } : newsfeed)));
-                message.success('Newsfeed updated successfully');
-            } else {
-                const response = await axios.post(`${BASE_API_URL}/newsfeed/create`, payload);
-                setNewsfeeds([...newsfeeds, response.data]);
-                message.success('Newsfeed added successfully');
-            }
-
+            await axios.put(`${BASE_API_URL}/newsfeed/update/${editNewsfeed.id}`, payload);
+            setNewsfeeds(newsfeeds.map(nf => nf.id === editNewsfeed.id ? { ...nf, ...payload } : nf));
+            message.success('Newsfeed updated');
             setIsModalVisible(false);
+            setEditNewsfeed(null);
         } catch (error) {
             message.error('Failed to save newsfeed');
         }
     };
 
-    // Filter newsfeeds based on search term
-    const filteredNewsfeeds = newsfeeds.filter(newsfeed => newsfeed.content.toLowerCase().includes(searchTerm.toLowerCase()));
+    const fetchPollDetails = async (pollId, newsfeed) => {
+        try {
+            const response = await axios.get(`${BASE_API_URL}/poll/by-newsfeed/${pollId}`);
+            const poll = response.data;
 
-    // Form initial values
+            const enrichedOptions = await Promise.all(
+                poll.pollOptions.map(async (option) => {
+                    const enrichedVotes = await Promise.all(
+                        (option.votes || []).map(async (vote) => {
+                            try {
+                                const userRes = await axios.get(`${BASE_API_URL}/user/get-user-by-id?userId=${vote.userId}`);
+                                return {
+                                    ...vote,
+                                    fullName: userRes.data.fullName,
+                                    avatarUrl: userRes.data.avatarUrl,
+                                };
+                            } catch {
+                                return vote;
+                            }
+                        })
+                    );
+                    return {
+                        ...option,
+                        votes: enrichedVotes
+                    };
+                })
+            );
+
+            setSelectedNewsfeed({
+                id: newsfeed.id,
+                content: newsfeed.content,
+                pollDetails: {
+                    ...poll,
+                    pollOptions: enrichedOptions
+                }
+            });
+        } catch {
+            message.error('Failed to load poll details');
+        }
+    };
+
+    const filteredNewsfeeds = newsfeeds.filter(nf =>
+        nf.content?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     const formInitialValues = editNewsfeed
         ? {
-            ...editNewsfeed,
-            startedAt: editNewsfeed.startedAt ? moment(editNewsfeed.startedAt) : null,
-            endedAt: editNewsfeed.endedAt ? moment(editNewsfeed.endedAt) : null,
-        }
+              ...editNewsfeed,
+              startedAt: moment(editNewsfeed.startedAt),
+              endedAt: moment(editNewsfeed.endedAt),
+          }
         : {};
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Row justify="space-between" style={{ marginBottom: '20px' }}>
+        <div style={{ padding: 20 }}>
+            <Row justify="space-between" style={{ marginBottom: 20 }}>
                 <Col>
                     <Input.Search
                         placeholder="Search newsfeeds"
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={e => setSearchTerm(e.target.value)}
                         style={{ width: 300 }}
                     />
                 </Col>
                 <Col>
-                    <Button type="primary" onClick={handleAdd}>
-                        Add New Newsfeed
-                    </Button>
+                    <Button type="primary" onClick={handleAdd}>Add Newsfeed</Button>
                 </Col>
             </Row>
 
@@ -177,88 +184,127 @@ const SponsorNewsfeedPage = () => {
                     <Col span={8} key={newsfeed.id}>
                         <Card
                             title={`Newsfeed ${newsfeed.id}`}
-                            extra={
-                                <Button type="link" onClick={() => handleEdit(newsfeed)}>Edit</Button>
-                            }
+                            extra={<Button type="link" onClick={() => handleEdit(newsfeed)}>Edit</Button>}
                             actions={[
                                 <Button type="link" onClick={() => handleDelete(newsfeed.id)}>Delete</Button>,
-                                <Button type="link" onClick={() => fetchPollDetails(newsfeed.pollId)}>View Poll Details</Button>
+                                newsfeed.pollId && (
+                                    <Button type="link" onClick={() => fetchPollDetails(newsfeed.pollId, newsfeed)}>
+                                        View Poll
+                                    </Button>
+                                )
                             ]}
                         >
                             <p>{newsfeed.content}</p>
-                            <p><strong>Start Date:</strong> {moment(newsfeed.startedAt).format('YYYY-MM-DD')}</p>
-                            <p><strong>End Date:</strong> {moment(newsfeed.endedAt).format('YYYY-MM-DD')}</p>
+                            <p><strong>Start:</strong> {moment(newsfeed.startedAt).format('YYYY-MM-DD')}</p>
+                            <p><strong>End:</strong> {moment(newsfeed.endedAt).format('YYYY-MM-DD')}</p>
                             <p><strong>Reacts:</strong> {newsfeed.reactIds?.length || 0}</p>
-                            <p><strong>Poll Count:</strong> {newsfeed.pollId ? (newsfeed.pollOptions?.length || 0) : 0}</p>
-                            {newsfeed.mediaUrls && newsfeed.mediaUrls.map((url, index) => (
-                                <img key={index} src={url} alt={`media ${index}`} style={{ width: "100%", marginBottom: 10 }} />
+                            {newsfeed.mediaUrls?.map((url, i) => (
+                                <img key={i} src={url} alt={`media-${i}`} style={{ width: '100%', marginBottom: 10 }} />
                             ))}
                         </Card>
                     </Col>
                 ))}
             </Row>
 
-            {/* View Poll Details Modal */}
-            {selectedNewsfeed && selectedNewsfeed.pollVotes && (
+            {/* ADD modal */}
+            {isAddMode && (
+                <AddNewsfeedModal
+                    open={isModalVisible}
+                    onCancel={() => {
+                        setIsModalVisible(false);
+                        setIsAddMode(false);
+                    }}
+                    onSuccess={() => {
+                        setIsModalVisible(false);
+                        setIsAddMode(false);
+                        fetchNewsfeeds();
+                    }}
+                />
+            )}
+
+            {/* EDIT modal */}
+            {!isAddMode && (
                 <Modal
-                    title="Poll Votes Details"
-                    open={true}
-                    onCancel={() => setSelectedNewsfeed(null)}
+                    title="Edit Newsfeed"
+                    open={isModalVisible}
+                    onCancel={() => {
+                        setIsModalVisible(false);
+                        setEditNewsfeed(null);
+                    }}
                     footer={null}
+                    destroyOnClose
                     width={600}
                 >
-                    <h3>Votes for Poll: {selectedNewsfeed.content}</h3>
-                    <List
-                        dataSource={selectedNewsfeed.pollVotes}
-                        renderItem={(vote) => (
-                            <List.Item>
-                                <strong>User ID:</strong> {vote.userId} - <strong>Vote:</strong> {vote.selectedOption}
-                            </List.Item>
-                        )}
-                    />
+                    <Form initialValues={formInitialValues} onFinish={handleSave} layout="vertical">
+                        <Form.Item name="content" label="Content" rules={[{ required: true }]}>
+                            <Input.TextArea rows={4} />
+                        </Form.Item>
+                        <Form.Item name="startedAt" label="Start Date" rules={[{ required: true }]}>
+                            <DatePicker showTime style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item name="endedAt" label="End Date" rules={[{ required: true }]}>
+                            <DatePicker showTime style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item label="Media">
+                            <Upload
+                                fileList={fileList}
+                                onChange={({ fileList }) => setFileList(fileList)}
+                                beforeUpload={() => false}
+                                multiple
+                                listType="picture"
+                            >
+                                <Button icon={<UploadOutlined />}>Upload</Button>
+                            </Upload>
+                        </Form.Item>
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit">Update</Button>
+                        </Form.Item>
+                    </Form>
                 </Modal>
             )}
 
-            <Modal
-                title={isEditing ? 'Edit Newsfeed' : 'Add Newsfeed'}
-                open={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                footer={null}
-                width={600}
-                destroyOnClose
-            >
-                <Form
-                    initialValues={formInitialValues}
-                    onFinish={handleSave}
-                    layout="vertical"
+            {/* Poll Details Modal */}
+            {selectedNewsfeed?.pollDetails && (
+                <Modal
+                    title={`Poll for Newsfeed #${selectedNewsfeed.id}`}
+                    open={true}
+                    onCancel={() => setSelectedNewsfeed(null)}
+                    footer={null}
+                    width={700}
                 >
-                    <Form.Item name="content" label="Content" rules={[{ required: true, message: 'Please input content!' }]}>
-                        <Input.TextArea rows={4} />
-                    </Form.Item>
-                    <Form.Item name="startedAt" label="Start Date" rules={[{ required: true, message: 'Please input start date!' }]}>
-                        <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" style={{ width: '100%' }} />
-                    </Form.Item>
-                    <Form.Item name="endedAt" label="End Date" rules={[{ required: true, message: 'Please input end date!' }]}>
-                        <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" style={{ width: '100%' }} />
-                    </Form.Item>
-                    <Form.Item label="Media">
-                        <Upload
-                            fileList={fileList}
-                            onChange={({ fileList }) => setFileList(fileList)}
-                            beforeUpload={() => false}
-                            multiple
-                            listType="picture"
-                        >
-                            <Button icon={<UploadOutlined />}>Upload Images</Button>
-                        </Upload>
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            {isEditing ? 'Update' : 'Create'}
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                    <h3>{selectedNewsfeed.pollDetails.question}</h3>
+                    {selectedNewsfeed.pollDetails.pollOptions.map((option, index) => (
+                        <div key={option.id} style={{ marginBottom: '16px' }}>
+                            <strong>{index + 1}. {option.type}</strong>
+                            <List
+                                dataSource={option.votes || []}
+                                renderItem={(vote) => (
+                                    <List.Item>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <img
+                                                src={vote.avatarUrl}
+                                                alt="avatar"
+                                                style={{
+                                                    width: 40,
+                                                    height: 40,
+                                                    borderRadius: '50%',
+                                                    objectFit: 'cover',
+                                                    marginRight: 12
+                                                }}
+                                            />
+                                            <div>
+                                                <div><strong>{vote.fullName || `User ${vote.userId}`}</strong></div>
+                                                <div style={{ fontSize: 12, color: '#888' }}>User ID: {vote.userId}</div>
+                                            </div>
+                                        </div>
+                                    </List.Item>
+                                )}
+                                locale={{ emptyText: "No votes for this option" }}
+                            />
+                        </div>
+                    ))}
+                </Modal>
+            )}
         </div>
     );
 };

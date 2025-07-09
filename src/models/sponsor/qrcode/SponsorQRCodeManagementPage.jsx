@@ -1,107 +1,135 @@
 import { useState, useEffect } from 'react';
-import { Card, Row, Col, Button, Modal, message, Spin } from 'antd';
+import { Card, Row, Col, Button, Modal, message, Spin, Typography } from 'antd';
 import axios from 'axios';
 import { BASE_API_URL } from '../../../constants/APIConstants';
 
 const SponsorQRCodeManagementPage = () => {
-    const [newsfeeds, setNewsfeeds] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [qrCodeUrl, setQrCodeUrl] = useState(null);
-    const [selectedNewsfeed, setSelectedNewsfeed] = useState(null);
+  const [newsfeeds, setNewsfeeds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState(null);
+  const [selectedNewsfeed, setSelectedNewsfeed] = useState(null);
+  const [sponsorId, setSponsorId] = useState(null);
 
-    const sponsorUsername = localStorage.getItem("username");
+  const sponsorUsername = localStorage.getItem("username");
 
-    // Lấy danh sách newsfeeds của sponsor
-    useEffect(() => {
-        const fetchNewsfeeds = async () => {
-            setLoading(true);
-            try {
-                const sponsorId = await fetchSponsorId(sponsorUsername);
-                const response = await axios.get(`${BASE_API_URL}/newsfeed/get-newsfeed-by-sponsor-id?sponsorId=${sponsorId}`);
-                setNewsfeeds(response.data);
-            } catch (error) {
-                message.error('Failed to load newsfeeds');
-            }
-            setLoading(false);
-        };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const sponsorId = await fetchSponsorId(sponsorUsername);
+        setSponsorId(sponsorId);
 
-        fetchNewsfeeds();
-    }, []);
-
-    // Lấy sponsorId thông qua username
-    const fetchSponsorId = async (username) => {
-        try {
-            const response = await axios.get(`http://localhost:7050/sponsor/get-by-username?username=${username}`);
-            return response.data.id;
-        } catch (error) {
-            message.error('Failed to fetch sponsor ID');
-        }
-    };
-
-    // Lấy URL QR code khi nhấn vào một newsfeed
-    const handleGenerateQRCode = async (newsfeed) => {
-        setSelectedNewsfeed(newsfeed);
-        setLoading(true);
-
-        try {
-            const response = await axios.post(`${BASE_API_URL}/sponsor/qrcode/generate`, {
-                sponsorId: newsfeed.sponsorId,
-                points: 10, // Assuming some points, this can be dynamic
-                newsfeedId: newsfeed.id,
-            });
-
-            setQrCodeUrl(response.data.qrCodeUrl); // Get QR Code URL from response
-            setIsModalVisible(true);
-        } catch (error) {
-            message.error('Failed to generate QR code');
-        }
-
+        const res = await axios.get(`${BASE_API_URL}/newsfeed/get-newsfeed-by-sponsor-id?sponsorId=${sponsorId}`);
+        setNewsfeeds(res.data);
+      } catch (err) {
+        console.error(err);
+        message.error('Không thể tải dữ liệu Newsfeed');
+      } finally {
         setLoading(false);
+      }
     };
 
-    return (
-        <div style={{ padding: '20px' }}>
-            <h2>Manage QR Codes for Newsfeeds</h2>
-            <Row gutter={16}>
-                {newsfeeds.map(newsfeed => (
-                    <Col span={8} key={newsfeed.id}>
-                        <Card
-                            title={`Newsfeed ${newsfeed.id}`}
-                            extra={
-                                <Button type="link" onClick={() => handleGenerateQRCode(newsfeed)}>
-                                    Generate QR Code
-                                </Button>
-                            }
-                        >
-                            <p>{newsfeed.content}</p>
-                            <p><strong>Start Date:</strong> {newsfeed.startedAt}</p>
-                            <p><strong>End Date:</strong> {newsfeed.endedAt}</p>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
+    fetchData();
+  }, [sponsorUsername]);
 
-            {/* QR Code Modal */}
-            <Modal
-                title="QR Code"
-                visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                footer={null}
-                width={600}
-            >
-                <h3>QR Code for Newsfeed {selectedNewsfeed?.id}</h3>
-                {loading ? (
-                    <Spin size="large" />
-                ) : (
-                    <div style={{ textAlign: 'center' }}>
-                        <img src={qrCodeUrl} alt="QR Code" style={{ width: '100%' }} />
-                        <p>Scan this QR code to participate and earn points!</p>
-                    </div>
-                )}
-            </Modal>
+  const fetchSponsorId = async (username) => {
+    const res = await axios.get(`${BASE_API_URL}/sponsor/get-by-username?username=${username}`);
+    return res.data.id;
+  };
+
+  const handleGenerateQRCode = async (newsfeed) => {
+    setSelectedNewsfeed(newsfeed);
+    setQrCodeUrl(null);
+    setModalLoading(true);
+    setIsModalVisible(true);
+
+    try {
+      const res = await axios.post(`${BASE_API_URL}/sponsor/qrcode/generate`, null, {
+        params: {
+          sponsorId: sponsorId,
+          points: 10,
+          newsfeedId: newsfeed.id,
+        },
+      });
+
+      const url = res.data?.qrCodeUrl;
+      if (url) {
+        setQrCodeUrl(url);
+      } else {
+        message.error("Không nhận được QR Code URL");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tạo QR Code");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: 24 }}>
+      <Typography.Title level={2}>Quản lý QR Code cho Newsfeed</Typography.Title>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', marginTop: 100 }}>
+          <Spin size="large" />
         </div>
-    );
+      ) : (
+        <Row gutter={[16, 16]}>
+          {newsfeeds.map((newsfeed) => (
+            <Col span={8} key={newsfeed.id}>
+              <Card
+                title={`Newsfeed #${newsfeed.id}`}
+                extra={<Button type="link" onClick={() => handleGenerateQRCode(newsfeed)}>Tạo QR Code</Button>}
+              >
+                <p>{newsfeed.content}</p>
+                <p><strong>Bắt đầu:</strong> {new Date(newsfeed.startedAt).toLocaleString()}</p>
+                <p><strong>Kết thúc:</strong> {new Date(newsfeed.endedAt).toLocaleString()}</p>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
+
+      <Modal
+        title="QR Code"
+        open={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setQrCodeUrl(null);
+        }}
+        footer={null}
+        centered
+        width={500}
+      >
+        <Typography.Title level={4}>
+          QR Code cho Newsfeed #{selectedNewsfeed?.id}
+        </Typography.Title>
+
+        {modalLoading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Spin size="large" />
+          </div>
+        ) : qrCodeUrl ? (
+          <div style={{ textAlign: 'center' }}>
+            <img
+              src={qrCodeUrl}
+              alt="QR Code"
+              style={{ maxWidth: '100%', height: 'auto', marginBottom: 16 }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/fallback-qr.png"; // nếu có ảnh fallback
+              }}
+            />
+            <p>Quét mã để nhận điểm tham gia sự kiện</p>
+          </div>
+        ) : (
+          <Typography.Text type="danger">Không thể hiển thị QR Code</Typography.Text>
+        )}
+      </Modal>
+    </div>
+  );
 };
 
 export default SponsorQRCodeManagementPage;

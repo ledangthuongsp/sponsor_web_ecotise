@@ -25,6 +25,7 @@ import {
 } from '../../services/RewardService';
 import { getAllLocations } from "../../services/LocationService";
 import { Pie, Bar } from '@ant-design/charts';
+import { Spin } from "antd";
 
 const { Column } = Table;
 const { Search } = Input;
@@ -34,7 +35,11 @@ const RewardPages = () => {
   const [form] = Form.useForm();
   const [rewards, setRewards] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // giữ để dùng chung khi cần
+  const [deletingId, setDeletingId] = useState(null);
+  const [importingKey, setImportingKey] = useState(null); // key dạng `${rewardItemId}-${locationId}`
+  const [modalLoading, setModalLoading] = useState(false); // loading cho modal add/edit
+  const [stockModalLoading, setStockModalLoading] = useState(false); // loading cho modal stock
   const [modalOpen, setModalOpen] = useState(false);
   const [event, setEvent] = useState("add");
   const [selectId, setSelectId] = useState(null);
@@ -124,11 +129,13 @@ const RewardPages = () => {
   }, [rewards]);
 
   const handleImportRequest = async (rewardItemId, locationId) => {
-    const quantity = importQuantities[`${rewardItemId}-${locationId}`] || 0;
+    const key = `${rewardItemId}-${locationId}`;
+    const quantity = importQuantities[key] || 0;
     if (quantity <= 0) {
       message.warning("Please enter quantity > 0");
       return;
     }
+    setImportingKey(key);
     const success = await createImportRequest(locationId, [
       { rewardItemId, numberOfItem: quantity }
     ]);
@@ -138,7 +145,9 @@ const RewardPages = () => {
     } else {
       message.error("Failed to send import request.");
     }
+    setImportingKey(null);
   };
+
 
   const filteredRewards = rewards.filter((reward) =>
     reward.itemName?.toLowerCase().includes(searchTerm)
@@ -147,6 +156,7 @@ const RewardPages = () => {
   const normFile = (e) => Array.isArray(e) ? e : e?.fileList;
 
   const onFinish = async (values) => {
+    setModalLoading(true);
     const formData = new FormData();
     const rewardData = {
       pointCharge: values.pointCharge,
@@ -163,7 +173,6 @@ const RewardPages = () => {
       }
     });
 
-    setLoading(true);
     const success =
       event === "add"
         ? await addNewRewardItem(formData)
@@ -173,10 +182,11 @@ const RewardPages = () => {
       message.success(event === "add" ? "Added!" : "Updated!");
       setModalOpen(false);
       form.resetFields();
-      callGetRewards();
+      await callGetRewards();
     }
-    setLoading(false);
+    setModalLoading(false);
   };
+
 
   const handleDelete = async (id) => {
     setLoading(true);
@@ -195,7 +205,17 @@ const RewardPages = () => {
       {/* PART 1: CRUD */}
       <Flex justify="space-between" gap="small">
         <Search placeholder="Search rewards" onSearch={(val) => setSearchTerm(val)} enterButton />
-        <Button type="primary" onClick={() => { setModalOpen(true); setEvent("add"); form.resetFields(); }}>
+        <Button
+          type="primary"
+          style={{ width: "15%" }}
+          onClick={() => {
+            setModalOpen(true);
+            setEvent("add");
+            setModalLoading(true); // Bắt đầu loading khi mở modal
+            form.resetFields();
+            setTimeout(() => setModalLoading(false), 300); // Giả lập loading, hoặc fetch dữ liệu nếu cần
+          }}
+        >
           Add Reward
         </Button>
       </Flex>
@@ -209,22 +229,29 @@ const RewardPages = () => {
           title="Images"
           dataIndex="rewardItemUrl"
           render={(urls) => urls.map((url, i) => (
-            <img key={i} src={url} alt="reward" style={{ maxWidth: "80px", marginRight: "5px" }} />
+            <img key={i} src={url} alt="reward" style={{marginRight: "5px" }} />
           ))}
         />
         <Column
           title="Actions"
           render={(_, record) => (
             <Flex gap="small">
+              <Button
+                onClick={async () => {
+                  setSelectedReward(record);
+                  setStockModalLoading(true);  // Bắt đầu loading
+                  setStockModalOpen(true);
+                  await fetchStockData(record.id);
+                  setStockModalLoading(false); // Kết thúc loading
+                }}
+              >
+                Stock
+              </Button>
               <Button onClick={async () => {
-                setSelectedReward(record);
-                await fetchStockData(record.id);
-                setStockModalOpen(true);
-              }}>Stock</Button>
-              <Button onClick={() => {
                 setModalOpen(true);
                 setEvent("update");
                 setSelectId(record.id);
+                setModalLoading(true); // Bắt đầu loading khi mở modal
                 form.setFieldsValue({
                   itemName: record.itemName,
                   itemDescription: record.itemDescription,
@@ -233,9 +260,10 @@ const RewardPages = () => {
                     uid: `${i}`, name: `img-${i}`, status: "done", url,
                   })),
                 });
+                setTimeout(() => setModalLoading(false), 300); // Giả lập loading, hoặc fetch dữ liệu nếu cần
               }}>Edit</Button>
               <Popconfirm title="Confirm delete?" onConfirm={() => handleDelete(record.id)}>
-                <Button danger>Delete</Button>
+                <Button danger loading={deletingId === record.id}>Delete</Button>
               </Popconfirm>
             </Flex>
           )}
@@ -256,50 +284,64 @@ const RewardPages = () => {
       </Modal>
 
       {/* Modal View Stock per reward */}
-      <Modal open={stockModalOpen} onCancel={() => setStockModalOpen(false)} footer={null} width={800} centered>
-        <Typography.Title level={4}>Stock for: {selectedReward?.itemName}</Typography.Title>
-        <Table dataSource={allLocations.map((loc) => {
-            const stock = locationStocks.find((s) => s.locationId === loc.id) || {};
-            return {
-              key: loc.id,
-              locationName: loc.locationName,
-              stock: stock.stock || 0,
-              importing: stock.importing || 0,
-              pending: stock.pending || 0,
-              locationId: loc.id,
-            };
-          })}
-          pagination={false}
-        >
-          <Column title="Location" dataIndex="locationName" />
-          <Column title="Stock" dataIndex="stock" />
-          <Column title="Importing" dataIndex="importing" />
-          <Column title="Pending" dataIndex="pending" />
-          <Column
-            title="Import Qty"
-            render={(_, record) => (
-              <InputNumber
-                min={1}
-                value={importQuantities[`${selectedReward.id}-${record.locationId}`] || 0}
-                onChange={(value) =>
-                  setImportQuantities((prev) => ({
-                    ...prev,
-                    [`${selectedReward.id}-${record.locationId}`]: value,
-                  }))
-                }
-              />
-            )}
-          />
-          <Column
-            title="Actions"
-            render={(_, record) => (
-              <Button type="primary" onClick={() => handleImportRequest(selectedReward.id, record.locationId)}>
-                Import
-              </Button>
-            )}
-          />
-        </Table>
+      <Modal
+        open={stockModalOpen}
+        onCancel={() => setStockModalOpen(false)}
+        footer={null}
+        width={800}
+        centered
+      >
+        <Spin spinning={stockModalLoading}>
+          <Typography.Title level={4}>Stock for: {selectedReward?.itemName}</Typography.Title>
+          <Table
+            dataSource={allLocations.map((loc) => {
+              const stock = locationStocks.find((s) => s.locationId === loc.id) || {};
+              return {
+                key: loc.id,
+                locationName: loc.locationName,
+                stock: stock.stock || 0,
+                importing: stock.importing || 0,
+                pending: stock.pending || 0,
+                locationId: loc.id,
+              };
+            })}
+            pagination={false}
+          >
+            <Column title="Location" dataIndex="locationName" />
+            <Column title="Stock" dataIndex="stock" />
+            <Column title="Importing" dataIndex="importing" />
+            <Column title="Pending" dataIndex="pending" />
+            <Column
+              title="Import Qty"
+              render={(_, record) => (
+                <InputNumber
+                  min={1}
+                  value={importQuantities[`${selectedReward.id}-${record.locationId}`] || 0}
+                  onChange={(value) =>
+                    setImportQuantities((prev) => ({
+                      ...prev,
+                      [`${selectedReward.id}-${record.locationId}`]: value,
+                    }))
+                  }
+                />
+              )}
+            />
+            <Column
+              title="Actions"
+              render={(_, record) => (
+                <Button
+                  type="primary"
+                  onClick={() => handleImportRequest(selectedReward.id, record.locationId)}
+                  loading={importingKey === `${selectedReward.id}-${record.locationId}`}
+                >
+                  Import
+                </Button>
+              )}
+            />
+          </Table>
+        </Spin>
       </Modal>
+
 
       {/* PART 2: Location thiếu hàng */}
       <Divider orientation="left">Location Low Stock Items</Divider>
@@ -323,9 +365,14 @@ const RewardPages = () => {
         <Column
           title="Actions"
           render={(_, record) => (
-            <Button type="primary" onClick={() => handleImportRequest(record.rewardItemId, record.locationId)}>
+            <Button
+              type="primary"
+              onClick={() => handleImportRequest(record.rewardItemId, record.locationId)}
+              loading={importingKey === `${record.rewardItemId}-${record.locationId}`}
+            >
               Import
             </Button>
+
           )}
         />
       </Table>
