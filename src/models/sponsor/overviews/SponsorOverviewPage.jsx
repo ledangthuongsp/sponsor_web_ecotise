@@ -48,14 +48,13 @@ const SponsorOverviewPage = () => {
     const [pageSize] = useState(5);  // Số lượng bài viết hiển thị mỗi trang cho phần "All Newsfeeds"
     const [sponsorId, setSponsorId] = useState(null);
 
-    // Lấy username từ localStorage
-    const sponsorUsername = localStorage.getItem("username");
+    // Lấy email từ localStorage
+    const sponsorEmail = localStorage.getItem("email");
 
     useEffect(() => {
-        // Lấy sponsorId thông qua username
         const fetchSponsorId = async () => {
             try {
-                const response = await axios.get(`http://localhost:7050/sponsor/get-by-username?username=${sponsorUsername}`);
+                const response = await axios.get(`http://localhost:7050/sponsor/get-by-email?email=${sponsorEmail}`);
                 setSponsorId(response.data.id);  // Lưu sponsorId vào state
                 setCompanyInfo(response.data);  // Lưu thông tin công ty
             } catch (error) {
@@ -63,10 +62,10 @@ const SponsorOverviewPage = () => {
             }
         };
 
-        if (sponsorUsername) {
+        if (sponsorEmail) {
             fetchSponsorId();
         }
-    }, [sponsorUsername]);
+    }, [sponsorEmail]);
 
     useEffect(() => {
         if (sponsorId) {

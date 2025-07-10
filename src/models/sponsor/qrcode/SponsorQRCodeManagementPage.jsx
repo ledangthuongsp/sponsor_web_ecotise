@@ -12,12 +12,12 @@ const SponsorQRCodeManagementPage = () => {
   const [selectedNewsfeed, setSelectedNewsfeed] = useState(null);
   const [sponsorId, setSponsorId] = useState(null);
 
-  const sponsorUsername = localStorage.getItem("username");
+  const sponsorEmail = localStorage.getItem("email");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sponsorId = await fetchSponsorId(sponsorUsername);
+        const sponsorId = await fetchSponsorId(sponsorEmail);
         setSponsorId(sponsorId);
 
         const res = await axios.get(`${BASE_API_URL}/newsfeed/get-newsfeed-by-sponsor-id?sponsorId=${sponsorId}`);
@@ -31,10 +31,10 @@ const SponsorQRCodeManagementPage = () => {
     };
 
     fetchData();
-  }, [sponsorUsername]);
+  }, [sponsorEmail]);
 
-  const fetchSponsorId = async (username) => {
-    const res = await axios.get(`${BASE_API_URL}/sponsor/get-by-username?username=${username}`);
+  const fetchSponsorId = async (email) => {
+    const res = await axios.get(`${BASE_API_URL}/sponsor/get-by-email?email=${email}`);
     return res.data.id;
   };
 

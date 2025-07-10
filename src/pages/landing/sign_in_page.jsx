@@ -5,10 +5,12 @@ import "../../styles/sign_in.css";
 import { useState } from "react";
 import axios from "axios";
 import { BASE_API_URL } from "../../constants/APIConstants";
+
 export default function SignIn() {
   const location = useLocation();
   const role = location.state?.role || "admin"; // Default role is admin
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,18 +35,21 @@ export default function SignIn() {
       // Sponsor login
       try {
         const response = await axios.post(
-          `${BASE_API_URL}/sponsor/login`,
-          null,
-          { params: { username, password } }
+          `${BASE_API_URL}/sponsor/login`, // Correct endpoint for sponsor login
+          { email, password } // Send email and password in request body
         );
+
         if (response.data.trim() === "Login successful") {
           localStorage.setItem("role", "SPONSOR");
-          localStorage.setItem("username", username); // Store username
-          const response = await axios.get(`${BASE_API_URL}/sponsor/get-by-username`, {
-          params: { username }
-        });
-        const sponsorId = response.data.id;
-        localStorage.setItem("sponsorId", sponsorId);
+          localStorage.setItem("email", email); // Store email
+
+          // Fetch sponsor info after successful login
+          const sponsorResponse = await axios.get(`${BASE_API_URL}/sponsor/get-by-email`, {
+            params: { email }
+          });
+
+          const sponsorId = sponsorResponse.data.id;
+          localStorage.setItem("sponsorId", sponsorId);
           navigate("/dashboard-sponsor"); // Redirect to sponsor dashboard
         } else {
           setError(response.data || "Login failed");
@@ -96,15 +101,33 @@ export default function SignIn() {
         <p className="signin-role-text">You are signing in as: <b>{role}</b></p>
 
         <form className="signin-form" onSubmit={handleSubmit}>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            placeholder="Your username"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+          {role === "admin" && (
+            <>
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                type="text"
+                placeholder="Your username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </>
+          )}
+          {role === "sponsor" && (
+            <>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Your email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </>
+          )}
+
           <label htmlFor="password" className="password-label">Password</label>
           <input
             id="password"

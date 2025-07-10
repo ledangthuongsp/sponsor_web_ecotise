@@ -21,7 +21,7 @@ const SponsorNewsfeedPage = () => {
     const [fileList, setFileList] = useState([]);
     const [selectedNewsfeed, setSelectedNewsfeed] = useState(null);
 
-    const sponsorUsername = localStorage.getItem("username");
+    const sponsorEmail = localStorage.getItem("email");
 
     const fetchNewsfeeds = async () => {
         if (!sponsorId) return;
@@ -38,7 +38,7 @@ const SponsorNewsfeedPage = () => {
     useEffect(() => {
         const fetchSponsorId = async () => {
             try {
-                const response = await axios.get(`${BASE_API_URL}/sponsor/get-by-username?username=${sponsorUsername}`);
+                const response = await axios.get(`${BASE_API_URL}/sponsor/get-by-email?email=${sponsorEmail}`);
                 if (response.data.id) {
                     setSponsorId(response.data.id);
                 }
@@ -46,8 +46,8 @@ const SponsorNewsfeedPage = () => {
                 message.error('Failed to fetch sponsor ID');
             }
         };
-        if (sponsorUsername) fetchSponsorId();
-    }, [sponsorUsername]);
+        if (sponsorEmail) fetchSponsorId();
+    }, [sponsorEmail]);
 
     useEffect(() => {
         fetchNewsfeeds();

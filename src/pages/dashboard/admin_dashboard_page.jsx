@@ -14,9 +14,10 @@ import Overview from "../../models/overview/pages/OverviewPage";
 // import LocationManagement from "../../models/locations/pages/LocationPage";
 import MaterialManagement from "../../models/materials/pages/MaterialsPage";
 import AchievementLevels from "../../models/achivements/AchivementLevelPage";
-import EmployeeManagement from "../../models/employees/EmployeePage";
+// import EmployeeManagement from "../../models/employees/EmployeePage";
 import DetectResponse from "../../models/detect_response/DetectResponsePage";
 import QuizManagement from "../../models/quiz/QuizManagementPage";
+import SponsorManagement from "../../models/sponsor/SponsorPage";
 // import RewardManagement from "../../models/rewards/RewardPages";
 
 const { Sider, Content } = Layout;
@@ -47,11 +48,11 @@ const items = [
         icon: <img src={Icon.AchievementIcon} alt="Achievement" style={{ width: '24px', height: '24px' }} />,
         label: "Achievement Levels",
     },
-    {
-        key: "7",
-        icon: <img src={Icon.EmployeeIcon} alt="Employee" style={{ width: '24px', height: '24px' }} />,
-        label: "Employees Management",
-    },
+    // {
+    //     key: "7",
+    //     icon: <img src={Icon.EmployeeIcon} alt="Employee" style={{ width: '24px', height: '24px' }} />,
+    //     label: "Employees Management",
+    // },
     {
         key: "8",
         icon: <img src={Icon.DetectIcon} alt="Detect" style={{ width: '24px', height: '24px' }} />,
@@ -61,6 +62,11 @@ const items = [
         key: "9",
         icon: <img src={Icon.QuizIcon} alt="Quiz" style={{ width: '24px', height: '24px' }} />,
         label: "Quiz Management",
+    },
+    {
+        key: "11",
+        icon: <img src={Icon.EmployeeIcon} alt="Employee" style={{ width: '24px', height: '24px' }} />,
+        label: "Sponsor Management",  // Replace Employee Management with Sponsor Management
     },
     // {
     //     key: "10",
@@ -94,14 +100,17 @@ const AdminDashboardPage = () => {
                 return <MaterialManagement />;
             case "6":
                 return <AchievementLevels />;
-            case "7":
-                return <EmployeeManagement />;
+            // case "7":
+            //     return <EmployeeManagement />;
             case "8":
                 return <DetectResponse />;
             case "9":
                 return <QuizManagement />;
+
             // case "10":
             //     return <RewardManagement />;
+            case "11":
+                return <SponsorManagement />;
             default:
                 return <h1>Page Not Found</h1>;
         }

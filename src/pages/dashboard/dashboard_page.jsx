@@ -6,7 +6,9 @@ import Logo from "../../assets/logo.png";
 import Icon from "../../assets/icons";
 import "../../layouts/MainLayout.css";  // Assuming styles for your layout are in this file
 import { CiGift } from "react-icons/ci";
+import { CiUser } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import { CiSettings } from "react-icons/ci";
 
 // Importing pages to be displayed in Content
 import Overview from "../../models/sponsor/overviews/SponsorOverviewPage";
@@ -14,8 +16,9 @@ import SponsorNewsfeedPage from '../../models/sponsor/newsfeeds/SponsorNewsfeedP
 import SponsorQRCodeManagementPage from "../../models/sponsor/qrcode/SponsorQRCodeManagementPage";
 import DonationManagement from "../../models/donations/pages/DonationPage";
 import LocationManagement from "../../models/locations/pages/LocationPage";
-// import RewardManagement from "../../models/rewards/RewardPages";
 import RewardManagement from "../../models/rewards/RewardPages";
+import SponsorInformationPage from "../../models/sponsor/information/SponsorInformation.jsx";
+import ChangePasswordPage from "../../models/sponsor/ChangePasswordPage";
 const { Sider, Content } = Layout;
 
 const items = [
@@ -49,6 +52,16 @@ const items = [
         icon: <CiGift size={24} />,
         label: "Reward Management",
     },
+    {
+        key: "7",
+        icon: <CiUser size={24} />,
+        label: "Information",
+    },
+    {
+        key: "8",
+        icon: <CiSettings size={24} />,
+        label: "Change Password",
+    },
 ];
 
 const DashboardPage = () => {
@@ -78,7 +91,11 @@ const DashboardPage = () => {
             case "5":
                 return <LocationManagement />;
             case "6":
-            return <RewardManagement />;
+                return <RewardManagement />;
+            case "7":
+                return <SponsorInformationPage />;
+            case "8":
+                return <ChangePasswordPage />;
             // case "10":
             //     return <RewardManagement />;
             default:
