@@ -1,5 +1,4 @@
 import "../../styles/sponsor_register.css";
-
 export default function SponsorRegister() {
   return (
     <section className="sponsor-register-section">
