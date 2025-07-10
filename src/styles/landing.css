@@ -84,11 +84,13 @@
 }
 
 .hero-text h1 {
+  width: auto;
   font-weight: 700;
   font-size: 32px;
   display: flex;
   align-items: center;
   gap: 8px;
+  margin: 0;
 }
 
 .hero-text p.subtitle {
@@ -111,11 +113,11 @@
 }
 
 .hero-leaf {
-  width: 96px;
+  width: auto;
   margin-top: 40px;
   filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
 }
-  
+
 .hero-image-container {
   position: relative;
   flex: 1 1 400px;

@@ -60,7 +60,7 @@ const HeroSection = () => (
   <section className="hero-section" id="home">
     <div className="hero-text">
       <h1>
-        Welcome to Ecotise <img src={butterfly} alt="butterfly" width={24} />
+        Welcome to Ecotise <img src={butterfly} alt="butterfly"/>
       </h1>
       <p className="subtitle">Your Sustainable</p>
       <h2>
