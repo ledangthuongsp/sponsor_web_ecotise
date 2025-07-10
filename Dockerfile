@@ -17,14 +17,11 @@ RUN npm run build
 # Step 6: Set up the production image
 FROM nginx:alpine
 
-# Step 7: Copy the custom Nginx configuration file
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Step 8: Copy the build files from the build image
+# Step 7: Copy the build files from the build image
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Step 9: Expose the port on which the app will run
+# Step 8: Expose the port on which the app will run
 EXPOSE 80
 
-# Step 10: Start NGINX
+# Step 9: Start NGINX
 CMD ["nginx", "-g", "daemon off;"]
