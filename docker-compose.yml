@@ -4,12 +4,10 @@ services:
   web:
     build: .
     ports:
-      - "3000:3000"
+      - "80:80"  # Mở port 80 cho ứng dụng
     container_name: react_vite_dev
-    volumes:
-      - .:/app
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production  # Chạy ứng dụng trong môi trường production
     restart: always
     networks:
       - react_network
