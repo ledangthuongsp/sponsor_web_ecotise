@@ -7,7 +7,7 @@ WORKDIR /app
 # Bước 3: Copy package.json và package-lock.json vào container
 COPY package.json package-lock.json ./
 
-# Bước 4: Cài đặt dependencies, bao gồm devDependencies
+# Bước 4: Cài đặt dependencies
 RUN npm install
 
 # Bước 5: Copy toàn bộ mã nguồn vào container
@@ -15,6 +15,9 @@ COPY . .
 
 # Bước 6: Build ứng dụng React cho môi trường production
 RUN npm run build
+
+# Kiểm tra thư mục build
+RUN ls -alh /app/build
 
 # Bước 7: Dùng Nginx để phục vụ ứng dụng React (nginx:alpine là image cực kỳ nhẹ)
 FROM nginx:alpine
