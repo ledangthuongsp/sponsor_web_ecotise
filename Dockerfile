@@ -1,4 +1,4 @@
-# Bước 1: Sử dụng một image nhẹ như node:alpine để build ứng dụng
+# Bước 1: Sử dụng Node.js 22 Alpine để build ứng dụng
 FROM node:22-alpine as build
 
 # Bước 2: Thiết lập thư mục làm việc
@@ -7,8 +7,8 @@ WORKDIR /app
 # Bước 3: Copy package.json và package-lock.json vào container
 COPY package.json package-lock.json ./
 
-# Bước 4: Cài đặt dependencies
-RUN npm ci --only=production  # Sử dụng npm ci thay vì npm install để cài đặt nhanh và tối ưu hơn
+# Bước 4: Cài đặt dependencies, bao gồm devDependencies
+RUN npm install
 
 # Bước 5: Copy toàn bộ mã nguồn vào container
 COPY . .
