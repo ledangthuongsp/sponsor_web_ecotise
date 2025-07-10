@@ -18,10 +18,12 @@
 }
 
 .signin-logo {
-  width: 120px;
+  width: auto;
   color: #10a54a;
   margin: 0 auto 32px auto;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .signin-title {

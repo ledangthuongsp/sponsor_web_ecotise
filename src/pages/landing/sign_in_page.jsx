@@ -85,7 +85,7 @@ export default function SignIn() {
   return (
     <div className="signin-container">
       <div className="signin-left">
-        <img src={logo} alt="Ecotise" className="signin-logo" />
+        <img src={logo} alt="Ecotise" className="signin-logo"/>
         <h1 className="signin-logo">Ecotise</h1>
         <h2 className="signin-title">Welcome Back</h2>
         <p className="signin-role-text">You are signing in as: <b>{role}</b></p>
