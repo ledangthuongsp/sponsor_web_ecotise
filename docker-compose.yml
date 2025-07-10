@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    container_name: react_nginx_app
+    restart: always
+    environment:
+      NODE_ENV: production
+    networks:
+      - react_network
+
+networks:
+  react_network:
+    driver: bridge
