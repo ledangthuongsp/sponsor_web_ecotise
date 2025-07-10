@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { Button } from "antd/es/radio";
 import { Layout, Menu} from "antd";
 import DashboardIcon from "../../assets/icons/DashboardIcon";
 import Logo from "../../assets/logo.png";
 import Icon from "../../assets/icons";
 import "../../layouts/MainLayout.css";  // Assuming styles for your layout are in this file
+import { CiGift } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 
 // Importing pages to be displayed in Content
 import Overview from "../../models/sponsor/overviews/SponsorOverviewPage";
@@ -12,7 +15,7 @@ import SponsorQRCodeManagementPage from "../../models/sponsor/qrcode/SponsorQRCo
 import DonationManagement from "../../models/donations/pages/DonationPage";
 import LocationManagement from "../../models/locations/pages/LocationPage";
 // import RewardManagement from "../../models/rewards/RewardPages";
-
+import RewardManagement from "../../models/rewards/RewardPages";
 const { Sider, Content } = Layout;
 
 const items = [
@@ -41,15 +44,25 @@ const items = [
         icon: <img src={Icon.LocationIcon} alt="Location" style={{ width: '24px', height: '24px' }} />,
         label: "Location Management",
     },
+    {
+        key: "6",
+        icon: <CiGift size={24} />,
+        label: "Reward Management",
+    },
 ];
 
 const DashboardPage = () => {
     // State to manage which content to display
     const [activeContent, setActiveContent] = useState("1");
-
+    const navigate = useNavigate();
     // Function to handle menu item click
     const handleMenuClick = (e) => {
         setActiveContent(e.key);
+    };
+
+    const handleLogout = () => {
+        localStorage.clear(); // Clear localStorage
+         navigate("/signin", { replace: true }); // Redirect to sign-in page
     };
 
     const renderContent = () => {
@@ -64,6 +77,8 @@ const DashboardPage = () => {
                 return <DonationManagement />;
             case "5":
                 return <LocationManagement />;
+            case "6":
+            return <RewardManagement />;
             // case "10":
             //     return <RewardManagement />;
             default:
@@ -82,9 +97,16 @@ const DashboardPage = () => {
                     theme="light"
                     mode="inline"
                     defaultSelectedKeys={["1"]}
-                    onClick={handleMenuClick} // Update the content when menu is clicked
+                    onClick={handleMenuClick}
                     items={items}
                 />
+                <Button
+                    type="primary"
+                    style={{ margin: "20px", alignContent: "center", display: "flex", justifyContent: "center" }}
+                    onClick={handleLogout} // Logout handler
+                >
+                    Logout
+                </Button>
             </Sider>
 
             {/* Main content area */}

@@ -17,7 +17,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import {
   createDonation,
   deleteDonation,
-  getAllDonations,
+  getDonationsBySponsorId,
   updateDonation,
 } from "../../../services/DonationService";
 import { format } from "date-fns";
@@ -36,18 +36,29 @@ const DonationPage = () => {
   const [event, setEvent] = useState(null);
   const [form] = Form.useForm();
 
+  // Get sponsorId from localStorage
+  const sponsorId = localStorage.getItem("sponsorId");
+
   const callGetDonations = async () => {
-    try {
-      const data = await getAllDonations();
-      setDonations(data);
-    } catch (e) {
-      message.error("Failed to load donations");
+    if (sponsorId) {
+      try {
+        const data = await getDonationsBySponsorId(sponsorId);
+        setDonations(data);
+      } catch (e) {
+        message.error("Failed to load donations");
+      }
+    } else {
+      message.error("Sponsor ID is not available");
     }
   };
 
   useEffect(() => {
-    callGetDonations();
-  }, []);
+    if (sponsorId) {
+      callGetDonations();
+    } else {
+      message.error("Sponsor ID is missing");
+    }
+  }, [sponsorId]);
 
   const onSearch = (value) => {
     console.log("Search:", value);
@@ -72,6 +83,7 @@ const DonationPage = () => {
     const success =
       event === "add"
         ? await createDonation(
+            sponsorId, // Pass sponsorId when creating a donation
             values.title,
             values.name,
             values.description,

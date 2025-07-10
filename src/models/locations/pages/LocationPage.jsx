@@ -22,7 +22,7 @@ const { Column } = Table;
 const { Search } = Input;
 const { Dragger } = Upload;
 
-const sponsorId = 1; // Lấy từ context đăng nhập hoặc props
+
 
 const dayOfWeekVN = {
     MONDAY: "Thứ 2", TUESDAY: "Thứ 3", WEDNESDAY: "Thứ 4", THURSDAY: "Thứ 5",
@@ -51,6 +51,7 @@ const LocationPage = () => {
 
     // Fetch locations & materials
     const callGetLocations = async () => {
+        const sponsorId = localStorage.getItem("sponsorId");
         const all = await getAllLocations(sponsorId);
         setLocations(all);
     };
@@ -68,6 +69,7 @@ const LocationPage = () => {
 
     // --- Add/Update Location ---
     const onFinish = async (values) => {
+        const sponsorId = localStorage.getItem("sponsorId");
         const formData = new FormData();
         if (values.backGroundImgUrl?.[0]?.originFileObj) {
             formData.append("backGroundImage", values.backGroundImgUrl[0].originFileObj);

@@ -39,7 +39,7 @@ export const createDonation = async (title, name, description, startDate, endDat
     console.log(formData)
     try {
         console.log('post API')
-        const response = await axios.post(`${BASE_API_URL}/admin/donate/create-donation?title=${title}&name=${name}&description=${description}&startDate=${startDate}&endDate=${endDate}&totalDonations=0`, formData,
+        const response = await axios.post(`${BASE_API_URL}/sponsor/donate/create-donation?title=${title}&name=${name}&description=${description}&startDate=${startDate}&endDate=${endDate}&totalDonations=0`, formData,
            );
         console.log(response.data);
         console.log(response.status);
@@ -59,7 +59,7 @@ export const createDonation = async (title, name, description, startDate, endDat
 
 export const updateDonation = async (id, title, name, description, startDate, endDate, formData) => {
     try {
-        const response = await axios.put(`${BASE_API_URL}/admin/donate/update-donation/${id}?title=${title}&name=${name}&description=${description}&startDate=${startDate}&endDate=${endDate}`, formData);
+        const response = await axios.put(`${BASE_API_URL}/sponsor/donate/update-donation/${id}?title=${title}&name=${name}&description=${description}&startDate=${startDate}&endDate=${endDate}`, formData);
         console.log(response.data);
         console.log(response.status);
         if (response.status === 200 || response.status == 201) {
@@ -86,5 +86,33 @@ export const deleteDonation = async (id) => {
         return false;
     }
 }
+
+export const getDonationsBySponsorId = async (sponsorId) => {
+    try {
+        const response = await axios.get(`${BASE_API_URL}/sponsor/${sponsorId}/donations`);
+
+        const donations = response.data.map(donation => new Donation(
+            donation.id,
+            donation.title,
+            donation.name,
+            donation.description,
+            new Date(donation.startDate),
+            new Date(donation.endDate),
+            donation.sponsorImages,
+            donation.coverImageUrl,
+            donation.totalDonations,
+            donation.sponsorId,
+            donation.sponsorName,
+            new Date(donation.createdAt),
+            new Date(donation.updatedAt)
+        ));
+
+        return donations;
+    } catch (e) {
+        console.error('Error fetching donations by Sponsor ID:', e);
+        throw e;
+    }
+}
+
 
 

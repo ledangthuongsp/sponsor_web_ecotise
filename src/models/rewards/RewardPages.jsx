@@ -59,7 +59,8 @@ const RewardPages = () => {
   };
 
   const fetchStockChartData = async (rewardItems) => {
-    const allLocs = await getAllLocations();
+    const sponsorId = localStorage.getItem("sponsorId");
+    const allLocs = await getAllLocations(sponsorId);
     let barChartData = [];
     let pieChartData = [];
 
@@ -85,7 +86,8 @@ const RewardPages = () => {
 
 
   const fetchStockData = async (rewardId) => {
-    const locs = await getAllLocations();
+    const sponsorId = localStorage.getItem("sponsorId");
+    const locs = await getAllLocations(sponsorId);
     const stockData = await getStockByRewardItemId(rewardId);
     setAllLocations(locs);
     setLocationStocks(stockData);
@@ -93,7 +95,8 @@ const RewardPages = () => {
   };
 
   const fetchLowStock = async () => {
-    const all = await getAllLocations();
+      const sponsorId = localStorage.getItem("sponsorId");
+    const all = await getAllLocations(sponsorId);
     const result = [];
 
     for (const reward of rewards) {

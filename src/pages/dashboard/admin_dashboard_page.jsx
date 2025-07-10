@@ -1,12 +1,13 @@
 
 import {useState } from "react";
 import { Layout, Menu } from "antd";
+import { Button } from "antd/es/radio";
 import DashboardIcon from "../../assets/icons/DashboardIcon";
 import Logo from "../../assets/logo.png";
 import Icon from "../../assets/icons";
 import "../../layouts/MainLayout.css";  // Assuming styles for your layout are in this file
-import { CiGift } from "react-icons/ci";
 
+import { useNavigate } from "react-router-dom";
 // Importing pages to be displayed in Content
 import Overview from "../../models/overview/pages/OverviewPage";
 // import DonationManagement from "../../models/donations/pages/DonationPage";
@@ -16,7 +17,7 @@ import AchievementLevels from "../../models/achivements/AchivementLevelPage";
 import EmployeeManagement from "../../models/employees/EmployeePage";
 import DetectResponse from "../../models/detect_response/DetectResponsePage";
 import QuizManagement from "../../models/quiz/QuizManagementPage";
-import RewardManagement from "../../models/rewards/RewardPages";
+// import RewardManagement from "../../models/rewards/RewardPages";
 
 const { Sider, Content } = Layout;
 
@@ -61,20 +62,24 @@ const items = [
         icon: <img src={Icon.QuizIcon} alt="Quiz" style={{ width: '24px', height: '24px' }} />,
         label: "Quiz Management",
     },
-    {
-        key: "10",
-        icon: <CiGift size={24} />,
-        label: "Reward Management",
-    },
+    // {
+    //     key: "10",
+    //     icon: <CiGift size={24} />,
+    //     label: "Reward Management",
+    // },
 ];
 
 const AdminDashboardPage = () => {
     // State to manage which content to display
     const [activeContent, setActiveContent] = useState("1");
-
+    const navigate = useNavigate();
     // Function to handle menu item click
     const handleMenuClick = (e) => {
         setActiveContent(e.key);
+    };
+    const handleLogout = () => {
+        localStorage.clear(); // Clear localStorage
+         navigate("/signin", { replace: true }); // Redirect to sign-in page
     };
 
     const renderContent = () => {
@@ -95,8 +100,8 @@ const AdminDashboardPage = () => {
                 return <DetectResponse />;
             case "9":
                 return <QuizManagement />;
-            case "10":
-                return <RewardManagement />;
+            // case "10":
+            //     return <RewardManagement />;
             default:
                 return <h1>Page Not Found</h1>;
         }
@@ -117,6 +122,13 @@ const AdminDashboardPage = () => {
                     onClick={handleMenuClick} // Update the content when menu is clicked
                     items={items}
                 />
+                <Button
+                    type="primary"
+                    style={{ margin: "20px", alignContent: "center", display: "flex", justifyContent: "center" }}
+                    onClick={handleLogout} // Logout handler
+                >
+                    Logout
+                </Button>
             </Sider>
 
             {/* Main content area */}

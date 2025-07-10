@@ -40,6 +40,11 @@ export default function SignIn() {
         if (response.data.trim() === "Login successful") {
           localStorage.setItem("role", "SPONSOR");
           localStorage.setItem("username", username); // Store username
+          const response = await axios.get(`${BASE_API_URL}/sponsor/get-by-username`, {
+          params: { username }
+        });
+        const sponsorId = response.data.id;
+        localStorage.setItem("sponsorId", sponsorId);
           navigate("/dashboard-sponsor"); // Redirect to sponsor dashboard
         } else {
           setError(response.data || "Login failed");
