@@ -33,7 +33,7 @@ const DonationPage = () => {
   const [loading, setLoading] = useState(false);
   const [isModalDelete, setIsModalDelete] = useState(false);
   const [selectId, setSelectId] = useState(null);
-  const [event, setEvent] = useState(null);
+  const [event, setEvent] = useState(null); // 'add' hoặc 'update'
   const [form] = Form.useForm();
 
   // Get sponsorId from localStorage
@@ -64,53 +64,85 @@ const DonationPage = () => {
     console.log("Search:", value);
   };
 
-  const normFile = (e) => (Array.isArray(e) ? e : e?.fileList || []);
+  // Hàm này chuẩn hóa dữ liệu từ Upload component của Ant Design
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList || [];
+  };
 
   const onFinish = async (values) => {
-    const formData = new FormData();
-    values.coverImages.forEach((file) =>
-      formData.append("coverImage", file.originFileObj)
-    );
-    values.sponsorImages.forEach((file) =>
-      formData.append("sponsorImages", file.originFileObj)
-    );
+    const formData = new FormData(); // Tạo đối tượng FormData duy nhất ở đây
 
+    // Thêm các trường dữ liệu text vào FormData
+    formData.append("title", values.title);
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+
+    // Định dạng và thêm ngày tháng vào FormData
     const startDate = format(new Date(values.startDate), "yyyy-MM-dd HH:mm:ss");
     const endDate = format(new Date(values.endDate), "yyyy-MM-dd HH:mm:ss");
+    formData.append("startDate", startDate);
+    formData.append("endDate", endDate);
+
+    // Xử lý và thêm hình ảnh vào FormData
+    // Đảm bảo là mảng, và chỉ thêm các file mới (có originFileObj)
+    const coverImages = Array.isArray(values.coverImages) ? values.coverImages : (values.coverImages ? [values.coverImages] : []);
+    coverImages.forEach((file) => {
+      if (file.originFileObj) { // Chỉ thêm file mới được chọn
+        formData.append("coverImages", file.originFileObj);
+      }
+    });
+
+    const sponsorImages = Array.isArray(values.sponsorImages) ? values.sponsorImages : (values.sponsorImages ? [values.sponsorImages] : []);
+    sponsorImages.forEach((file) => {
+      if (file.originFileObj) { // Chỉ thêm file mới được chọn
+        formData.append("sponsorImages", file.originFileObj);
+      }
+    });
 
     setLoading(true);
 
-    const success =
-      event === "add"
-        ? await createDonation(
-            sponsorId, // Pass sponsorId when creating a donation
-            values.title,
-            values.name,
-            values.description,
-            startDate,
-            endDate,
-            formData
-          )
-        : await updateDonation(
-            selectId,
-            values.title,
-            values.name,
-            values.description,
-            startDate,
-            endDate,
-            formData
-          );
+    try {
+      let success = false;
+      if (event === "add") {
+        // Khi thêm mới, sponsorId cần được truyền vào hoặc là một phần của FormData
+        // Vì API của bạn trong DonationService.js không còn nhận sponsorId riêng lẻ,
+        // bạn cần thêm nó vào formData ở đây.
+        formData.append("sponsorId", sponsorId);
+        const responseData = await createDonation(formData); // Chỉ truyền FormData
+        success = !!responseData; // Kiểm tra nếu có dữ liệu trả về là thành công
+      } else { // event === "update"
+        // Khi cập nhật, ID của donation cần được truyền vào cho hàm updateDonation.
+        // API update của bạn cũng nhận formData, nên ID (selectId) có thể cần được thêm vào formData
+        // nếu backend của bạn mong đợi nó ở đó, hoặc API của bạn có thể sử dụng nó qua URL.
+        // Giả sử backend của bạn mong đợi ID trong FormData cho việc cập nhật:
+        formData.append("id", selectId);
+        // Nếu bạn muốn cập nhật totalDonations, hãy đảm bảo giá trị này có trong `values`
+        // và thêm nó vào formData
+        // if (values.totalDonations !== undefined) {
+        //   formData.append("totalDonations", values.totalDonations);
+        // }
+        const responseData = await updateDonation(selectId, formData); // Truyền ID và FormData
+        success = !!responseData;
+      }
 
-    if (success) {
-      message.success(event === "add" ? "Added successfully" : "Updated successfully");
-      setModalOpen(false);
-      form.resetFields();
-      callGetDonations();
-    } else {
-      message.error("Action failed");
+      if (success) {
+        message.success(event === "add" ? "Added successfully" : "Updated successfully");
+        setModalOpen(false);
+        form.resetFields();
+        callGetDonations();
+      } else {
+        message.error("Action failed: No successful response from server.");
+      }
+    } catch (error) {
+      console.error("Error creating/updating donation:", error);
+      // Hiển thị thông báo lỗi chi tiết hơn từ server nếu có
+      message.error("Upload failed: " + (error.response?.data?.message || error.message || "Unknown error"));
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleOkDelete = async () => {
@@ -131,7 +163,7 @@ const DonationPage = () => {
         <Search placeholder="Search donations" onSearch={onSearch} enterButton />
         <Button
           type="primary"
-          style={{ backgroundColor: "#8DD3BB", width: 150 , marginLeft: 10}}
+          style={{ backgroundColor: "#8DD3BB", width: 150, marginLeft: 10 }}
           onClick={() => {
             form.resetFields();
             setEvent("add");
@@ -171,7 +203,8 @@ const DonationPage = () => {
           title="Cover Images"
           dataIndex="coverImageUrl"
           render={(images) =>
-            images.map((url, idx) => (
+            // Nếu coverImageUrl là một chuỗi, hãy bọc nó trong một mảng
+            (Array.isArray(images) ? images : [images]).map((url, idx) => (
               <img key={idx} src={url} alt="" style={{ width: 200 }} />
             ))
           }
@@ -192,8 +225,23 @@ const DonationPage = () => {
                     description: record.description,
                     startDate: moment(record.startDate),
                     endDate: moment(record.endDate),
-                    sponsorImages: [],
-                    coverImages: [],
+                    // KHI CHỈNH SỬA:
+                    // Ant Design Upload component mong đợi `fileList` là một mảng các đối tượng { uid, name, status, url, ... }
+                    // Bạn cần ánh xạ các URL hình ảnh hiện có thành định dạng này để chúng hiển thị trong Dragger.
+                    // Nếu bạn đặt [] như hiện tại, Dragger sẽ trống rỗng và người dùng phải tải lại ảnh.
+                    // Đây là cách bạn có thể hiển thị ảnh hiện có:
+                    sponsorImages: record.sponsorImages ? record.sponsorImages.map((url, index) => ({
+                      uid: `sponsor-${index}`, // Cần một uid duy nhất
+                      name: url.substring(url.lastIndexOf('/') + 1), // Tên file từ URL
+                      status: 'done',
+                      url: url,
+                    })) : [],
+                    coverImages: record.coverImageUrl ? (Array.isArray(record.coverImageUrl) ? record.coverImageUrl : [record.coverImageUrl]).map((url, index) => ({
+                      uid: `cover-${index}`,
+                      name: url.substring(url.lastIndexOf('/') + 1),
+                      status: 'done',
+                      url: url,
+                    })) : [],
                   });
                 }}
               >
