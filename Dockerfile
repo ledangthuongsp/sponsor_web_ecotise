@@ -1,29 +1,32 @@
-# Bước 1: Sử dụng Node.js 22 Alpine để build ứng dụng
+# Step 1: Use Node.js 22 Alpine to build the app
 FROM node:22-alpine as build
 
-# Bước 2: Thiết lập thư mục làm việc
+# Step 2: Set working directory
 WORKDIR /app
 
-# Bước 3: Copy package.json và package-lock.json vào container
+# Step 3: Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
-# Bước 4: Cài đặt dependencies
+# Step 4: Install dependencies
 RUN npm ci
 
-# Bước 5: Copy toàn bộ mã nguồn vào container
+# Step 5: Copy the entire source code into the container
 COPY . .
 
-# Bước 6: Build ứng dụng React cho môi trường production
+# Step 6: Build the React app for production
 RUN npm run build
 
-# Bước 7: Dùng Nginx để phục vụ ứng dụng React
+# Optional: Verify build folder exists (for debugging)
+RUN ls -al /app/build
+
+# Step 7: Use Nginx to serve the React app
 FROM nginx:alpine
 
-# Bước 8: Copy build folder từ container build vào nginx
+# Step 8: Copy the build folder from the build container into Nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Mở port 80
+# Expose port 80
 EXPOSE 80
 
-# Chạy Nginx để phục vụ ứng dụng
+# Run Nginx to serve the app
 CMD ["nginx", "-g", "daemon off;"]
