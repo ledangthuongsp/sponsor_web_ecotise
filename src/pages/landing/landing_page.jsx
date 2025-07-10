@@ -30,7 +30,7 @@ function Navbar({ activeTab, onChangeTab }) {
           <li><a href="#blogs">Blogs</a></li>
           <li><a href="#contact">Contact us</a></li>
 
-          <li><a href="/sponsor-register">Sponsor Register</a></li>
+          <li><Link to="/sponsor-register">Sponsor Register</Link></li>
 
           {/* Sign In link (route riêng) */}
           <li>
