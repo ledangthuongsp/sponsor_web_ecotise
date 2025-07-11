@@ -54,7 +54,7 @@ const SponsorOverviewPage = () => {
     useEffect(() => {
         const fetchSponsorId = async () => {
             try {
-                const response = await axios.get(`http://localhost:7050/sponsor/get-by-email?email=${sponsorEmail}`);
+                const response = await axios.get(`${BASE_API_URL}/sponsor/get-by-email?email=${sponsorEmail}`);
                 setSponsorId(response.data.id);  // Lưu sponsorId vào state
                 setCompanyInfo(response.data);  // Lưu thông tin công ty
             } catch (error) {
