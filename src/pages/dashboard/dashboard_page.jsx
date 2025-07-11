@@ -19,6 +19,7 @@ import LocationManagement from "../../models/locations/pages/LocationPage";
 import RewardManagement from "../../models/rewards/RewardPages";
 import SponsorInformationPage from "../../models/sponsor/information/SponsorInformation.jsx";
 import ChangePasswordPage from "../../models/sponsor/ChangePasswordPage";
+import EmployeeManagement from "../../models/employees/EmployeePage";
 const { Sider, Content } = Layout;
 
 const items = [
