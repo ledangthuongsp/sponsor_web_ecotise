@@ -24,10 +24,9 @@ const AddNewsfeedModal = ({ open, onCancel, onSuccess }) => {
   const [pollOptions, setPollOptions] = useState([""]);
   const [uploading, setUploading] = useState(false);
 
-  const sponsorUsername = localStorage.getItem("username");
-
+  const email = localStorage.getItem("email");
   const fetchSponsorId = async () => {
-    const res = await axios.get(`${BASE_API_URL}/sponsor/get-by-username?username=${sponsorUsername}`);
+    const res = await axios.get(`${BASE_API_URL}/sponsor/get-by-email?email=${email}`);
     return res.data.id;
   };
 
